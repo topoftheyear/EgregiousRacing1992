@@ -24,6 +24,7 @@ class Camera:
         self.moving_down = False
 
     def handle_input(self, events, heightmap):
+        # Handle key strokes
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == self.settings.move_right:
@@ -55,6 +56,7 @@ class Camera:
                 if event.key == self.settings.move_down:
                     self.moving_down = False
 
+        # Handle mouse input for camera rotation
         mouse_x, mouse_y = pygame.mouse.get_rel()
         if mouse_x != 0:
             self.rotation += math.radians(-mouse_x) * self.settings.mouse_sensitivity
@@ -65,6 +67,7 @@ class Camera:
 
         self.rotation %= 2 * math.pi
 
+        # Handle actual movement
         if self.moving_forward:
             self.position.move(self.speed, self.rotation)
         if self.moving_backward:
@@ -74,13 +77,13 @@ class Camera:
         if self.moving_right:
             self.position.move(self.speed, self.rotation - (math.pi / 2))
 
+        self.position.x = min(self.position.x % 1024, 1023)
+        self.position.y = min(self.position.y % 1024, 1023)
+
         if self.moving_up:
             self.height += self.speed
         if self.moving_down:
             self.height -= self.speed
-
-        self.position.x = min(self.position.x % 1024, 1023)
-        self.position.y = min(self.position.y % 1024, 1023)
 
         self.height = max(self.height, heightmap[math.floor(self.position.x), math.floor(self.position.y)] + 1)
         self.height = min(self.height, 1000)
