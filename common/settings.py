@@ -22,10 +22,11 @@ class Settings(metaclass=Singleton):
 
         # Controls
         self.camera_rotation_speed = float(self.config['Controls']['CameraRotationSpeed'])
+        self.mouse_sensitivity = float(self.config['Controls']['MouseSensitivity'])
         self.move_forward = string_to_pygame_key(self.config['Controls']['MoveForward'])
         self.move_backward = string_to_pygame_key(self.config['Controls']['MoveBackward'])
-        self.rotate_left = string_to_pygame_key(self.config['Controls']['RotateLeft'])
-        self.rotate_right = string_to_pygame_key(self.config['Controls']['RotateRight'])
+        self.move_left = string_to_pygame_key(self.config['Controls']['MoveLeft'])
+        self.move_right = string_to_pygame_key(self.config['Controls']['MoveRight'])
         self.move_up = string_to_pygame_key(self.config['Controls']['MoveUp'])
         self.move_down = string_to_pygame_key(self.config['Controls']['MoveDown'])
 

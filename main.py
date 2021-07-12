@@ -7,7 +7,7 @@ import cv2
 import pygame
 import pygame.gfxdraw
 
-from common.point import Point
+from common.camera import Camera
 from common.settings import Settings
 from utils.helpers import *
 
@@ -29,6 +29,9 @@ clock = pygame.time.Clock()
 heightmap = cv2.imread('img/1H.png', 0)
 colormap = cv2.imread('img/1C.png', -1)
 colormap = cv2.cvtColor(colormap, cv2.COLOR_BGR2RGB)
+
+pygame.mouse.set_visible(False)
+pygame.event.set_grab(True)
 
 
 # establish c function
@@ -61,21 +64,7 @@ ls = LineStruct()
 def main():
     quality = settings.start_quality
 
-    current_position = Point(0, 0)
-    speed = 4
-    moving_forward = False
-    moving_backward = False
-
-    current_rotation = 0
-    rotating_right = False
-    rotating_left = False
-
-    current_height = 50
-    moving_up = False
-    moving_down = False
-
-    horizon = 120
-    scale_height = 240
+    camera = Camera()
 
     # Set one-time struct variables
     ls.heightMap = heightmap_to_ctypes(ls.heightMap, heightmap)
@@ -93,20 +82,6 @@ def main():
                 pygame.display.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == settings.rotate_right:
-                    rotating_right = True
-                if event.key == settings.rotate_left:
-                    rotating_left = True
-                if event.key == settings.move_forward:
-                    moving_forward = True
-                if event.key == settings.move_backward:
-                    moving_backward = True
-
-                if event.key == settings.move_up:
-                    moving_up = True
-                if event.key == settings.move_down:
-                    moving_down = True
-
                 if event.key == pygame.K_EQUALS:
                     quality -= settings.quality_chunks
                 if event.key == pygame.K_MINUS:
@@ -116,52 +91,17 @@ def main():
                     pygame.display.quit()
                     sys.exit()
 
-            if event.type == pygame.KEYUP:
-                if event.key == settings.rotate_right:
-                    rotating_right = False
-                if event.key == settings.rotate_left:
-                    rotating_left = False
-                if event.key == settings.move_forward:
-                    moving_forward = False
-                if event.key == settings.move_backward:
-                    moving_backward = False
-
-                if event.key == settings.move_up:
-                    moving_up = False
-                if event.key == settings.move_down:
-                    moving_down = False
+        camera.handle_input(events, heightmap)
 
         quality = max(quality, 0)
 
-        if rotating_right:
-            current_rotation -= settings.camera_rotation_speed
-        if rotating_left:
-            current_rotation += settings.camera_rotation_speed
-        current_rotation %= 2 * math.pi
-
-        if moving_forward:
-            current_position.move(speed, current_rotation)
-        if moving_backward:
-            current_position.move(-speed, current_rotation)
-
-        if moving_up:
-            current_height += speed
-        if moving_down:
-            current_height -= speed
-
-        current_position.x = min(current_position.x % 1024, 1023)
-        current_position.y = min(current_position.y % 1024, 1023)
-
-        current_height = max(current_height, heightmap[math.floor(current_position.x), math.floor(current_position.y)] + 1)
-        current_height = min(current_height, 1000)
-
         # Set per-frame struct variables
-        ls.currentX = current_position.x
-        ls.currentY = current_position.y
-        ls.rotation = current_rotation
-        ls.height = current_height
-        ls.horizon = horizon / resolution_width_ratio
-        ls.scaleHeight = scale_height / resolution_height_ratio
+        ls.currentX = camera.position.x
+        ls.currentY = camera.position.y
+        ls.rotation = camera.rotation
+        ls.height = camera.height
+        ls.horizon = camera.horizon / resolution_width_ratio
+        ls.scaleHeight = camera.scale_height / resolution_height_ratio
         ls.distance = settings.view_distance
         ls.quality = quality
 
