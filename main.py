@@ -1,4 +1,5 @@
 import math
+import random
 import sys
 import time
 
@@ -9,13 +10,12 @@ import pygame.gfxdraw
 
 from common.camera import Camera
 from common.settings import Settings
+from common.sprite import Sprite
+from common.point import Point
 from utils.helpers import *
 
 pygame.init()
 settings = Settings()
-
-resolution_width_ratio = settings.res_x / settings.internal_res_x
-resolution_height_ratio = settings.res_y / settings.internal_res_y
 
 flags = pygame.DOUBLEBUF
 screen = pygame.display.set_mode((settings.res_x, settings.res_y), flags)
@@ -60,6 +60,11 @@ line_calculator.get_lines.restype = None
 
 ls = LineStruct()
 
+worfs = list()
+for _ in range(12):
+    worfs.append(Sprite('img/worf.png', Point(random.randint(0, settings.internal_res_x),
+                                              random.randint(0, settings.internal_res_y))))
+
 
 def main():
     quality = settings.start_quality
@@ -100,15 +105,15 @@ def main():
         ls.currentY = camera.position.y
         ls.rotation = camera.rotation
         ls.height = camera.height
-        ls.horizon = camera.horizon / resolution_width_ratio
-        ls.scaleHeight = camera.scale_height / resolution_height_ratio
+        ls.horizon = camera.horizon / settings.res_width_ratio
+        ls.scaleHeight = camera.scale_height / settings.res_height_ratio
         ls.distance = settings.view_distance
         ls.quality = quality
 
         render()
 
         pygame.display.update()
-        clock.tick(30)
+        clock.tick(settings.fps_cap)
 
         print(1 / (time.time() - start))
 
@@ -129,6 +134,8 @@ def render():
             [line[3], line[4], line[5]],
         )
 
+    for worf in worfs:
+        surface.blit(worf.image, worf.position.tuple())
     pygame.transform.scale(surface, screen.get_size(), scaled_surface)
     screen.blit(scaled_surface, (0, 0))
 

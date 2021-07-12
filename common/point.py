@@ -10,5 +10,8 @@ class Point:
         self.x += distance * math.sin(angle - math.pi)
         self.y += distance * math.cos(angle - math.pi)
 
+    def tuple(self):
+        return (self.x, self.y)
+
     def __str__(self):
         return f'X:{self.x},Y:{self.y}'

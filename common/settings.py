@@ -10,25 +10,33 @@ class Settings(metaclass=Singleton):
         self.config.read('settings.ini')
 
         # Video
-        self.res_x = int(self.config['Video']['ResX'])
-        self.res_y = int(self.config['Video']['ResY'])
+        video = self.config['Video']
+        self.res_x = int(video['ResX'])
+        self.res_y = int(video['ResY'])
 
         # Quality
-        self.start_quality = float(self.config['Quality']['StartQuality'])
-        self.quality_chunks = float(self.config['Quality']['QualityChunks'])
-        self.internal_res_x = int(self.config['Quality']['InternalResX'])
-        self.internal_res_y = int(self.config['Quality']['InternalResY'])
-        self.view_distance = int(self.config['Quality']['ViewDistance'])
+        quality = self.config['Quality']
+        self.start_quality = float(quality['StartQuality'])
+        self.quality_chunks = float(quality['QualityChunks'])
+        self.internal_res_x = int(quality['InternalResX'])
+        self.internal_res_y = int(quality['InternalResY'])
+        self.view_distance = int(quality['ViewDistance'])
+        self.fps_cap = int(quality['FPSCap'])
 
         # Controls
-        self.camera_rotation_speed = float(self.config['Controls']['CameraRotationSpeed'])
-        self.mouse_sensitivity = float(self.config['Controls']['MouseSensitivity'])
-        self.move_forward = string_to_pygame_key(self.config['Controls']['MoveForward'])
-        self.move_backward = string_to_pygame_key(self.config['Controls']['MoveBackward'])
-        self.move_left = string_to_pygame_key(self.config['Controls']['MoveLeft'])
-        self.move_right = string_to_pygame_key(self.config['Controls']['MoveRight'])
-        self.move_up = string_to_pygame_key(self.config['Controls']['MoveUp'])
-        self.move_down = string_to_pygame_key(self.config['Controls']['MoveDown'])
+        controls = self.config['Controls']
+        self.camera_rotation_speed = float(controls['CameraRotationSpeed'])
+        self.mouse_sensitivity = float(controls['MouseSensitivity'])
+        self.move_forward = string_to_pygame_key(controls['MoveForward'])
+        self.move_backward = string_to_pygame_key(controls['MoveBackward'])
+        self.move_left = string_to_pygame_key(controls['MoveLeft'])
+        self.move_right = string_to_pygame_key(controls['MoveRight'])
+        self.move_up = string_to_pygame_key(controls['MoveUp'])
+        self.move_down = string_to_pygame_key(controls['MoveDown'])
+
+        # Derived settings
+        self.res_width_ratio = self.res_x / self.internal_res_x
+        self.res_height_ratio = self.res_y / self.internal_res_y
 
     def save(self):
         with open('settings.ini', 'w') as configfile:
