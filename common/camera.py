@@ -7,83 +7,43 @@ from common.settings import Settings
 
 
 class Camera:
-    def __init__(self, position=Point(), rotation=0, height=50, speed=4, horizon=120, scale_height=240):
-        self.position = position
+    def __init__(self, player, rotation=0, distance_from_player=15, horizon=540, scale_height=240):
+        self.player = player
+        self.position = Point()
         self.rotation = rotation
-        self.height = height
-        self.speed = speed
+        self.v_rotation = 0
+        self.distance = distance_from_player
+        self.height = 0
+        self.base_horizon = horizon
         self.horizon = horizon
         self.scale_height = scale_height
         self.settings = Settings()
 
-        self.moving_forward = False
-        self.moving_backward = False
-        self.moving_right = False
-        self.moving_left = False
-        self.moving_up = False
-        self.moving_down = False
-
-    def handle_input(self, events, heightmap):
-        # Handle key strokes
+    def handle_input(self, events):
+        # Handle mouse wheel
         for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == self.settings.move_right:
-                    self.moving_right = True
-                if event.key == self.settings.move_left:
-                    self.moving_left = True
-                if event.key == self.settings.move_forward:
-                    self.moving_forward = True
-                if event.key == self.settings.move_backward:
-                    self.moving_backward = True
+            if event.type == pygame.MOUSEWHEEL:
+                print(event)
+                if event.y > 0:
+                    self.distance -= 5
+                elif event.y < 0:
+                    self.distance += 5
 
-                if event.key == self.settings.move_up:
-                    self.moving_up = True
-                if event.key == self.settings.move_down:
-                    self.moving_down = True
-
-            if event.type == pygame.KEYUP:
-                if event.key == self.settings.move_right:
-                    self.moving_right = False
-                if event.key == self.settings.move_left:
-                    self.moving_left = False
-                if event.key == self.settings.move_forward:
-                    self.moving_forward = False
-                if event.key == self.settings.move_backward:
-                    self.moving_backward = False
-
-                if event.key == self.settings.move_up:
-                    self.moving_up = False
-                if event.key == self.settings.move_down:
-                    self.moving_down = False
+        self.distance = max(5, self.distance)
 
         # Handle mouse input for camera rotation
         mouse_x, mouse_y = pygame.mouse.get_rel()
         if mouse_x != 0:
             self.rotation += math.radians(-mouse_x) * self.settings.mouse_sensitivity
         if mouse_y != 0:
-            self.horizon += -mouse_y * self.settings.mouse_sensitivity * 10
-
-        self.horizon = max(-4 * self.settings.internal_res_y, min(self.horizon, 8 * self.settings.internal_res_y))
+            self.v_rotation += math.radians(mouse_y) * self.settings.mouse_sensitivity
 
         self.rotation %= 2 * math.pi
+        self.v_rotation = max(3 * math.pi / 2 + 0.05, min(self.v_rotation, 2 * math.pi - 0.05))
 
-        # Handle actual movement
-        if self.moving_forward:
-            self.position.move(self.speed, self.rotation)
-        if self.moving_backward:
-            self.position.move(-self.speed, self.rotation)
-        if self.moving_left:
-            self.position.move(self.speed, self.rotation + (math.pi / 2))
-        if self.moving_right:
-            self.position.move(self.speed, self.rotation - (math.pi / 2))
-
-        self.position.x = min(self.position.x % 1024, 1023)
-        self.position.y = min(self.position.y % 1024, 1023)
-
-        if self.moving_up:
-            self.height += self.speed
-        if self.moving_down:
-            self.height -= self.speed
-
-        self.height = max(self.height, heightmap[math.floor(self.position.x), math.floor(self.position.y)] + 1)
-        self.height = min(self.height, 1000)
+    def update(self):
+        # Set camera position and height based on current rotation and player position
+        self.position.x = -self.distance * math.sin(self.rotation) * math.sin(self.v_rotation) + self.player.position.x
+        self.position.y = -self.distance * math.cos(self.rotation) * math.sin(self.v_rotation) + self.player.position.y
+        self.height = int(-self.distance * math.sin(self.v_rotation - (math.pi / 2)) + self.player.height)
+        self.horizon = (0.42 * self.base_horizon) * -math.tan(self.v_rotation + (math.pi / 2)) + self.base_horizon

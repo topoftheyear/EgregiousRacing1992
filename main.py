@@ -5,12 +5,13 @@ import time
 
 import ctypes
 import cv2
+import numpy as np
 import pygame
 import pygame.gfxdraw
 
 from common.camera import Camera
+from common.car import Car
 from common.settings import Settings
-from common.sprite import Sprite
 from common.point import Point
 from utils.helpers import *
 
@@ -60,16 +61,17 @@ line_calculator.get_lines.restype = None
 
 ls = LineStruct()
 
-worfs = list()
-for _ in range(12):
-    worfs.append(Sprite('img/worf.png', Point(random.randint(0, settings.internal_res_x),
-                                              random.randint(0, settings.internal_res_y))))
+#worf = Sprite('img/worf.png', Point(500, 500))
+worf = pygame.image.load('img/worf.png').convert_alpha()
+worf = pygame.transform.scale(worf, (int(worf.get_width() / settings.res_width_ratio),
+                                     int(worf.get_height() / settings.res_height_ratio)))
+
+car = Car(Point(10, 10), worf, height=1000)
+camera = Camera(car)
 
 
 def main():
     quality = settings.start_quality
-
-    camera = Camera()
 
     # Set one-time struct variables
     ls.heightMap = heightmap_to_ctypes(ls.heightMap, heightmap)
@@ -96,9 +98,14 @@ def main():
                     pygame.display.quit()
                     sys.exit()
 
-        camera.handle_input(events, heightmap)
+        # Handle inputs
+        camera.handle_input(events)
 
         quality = max(quality, 0)
+
+        # Update objects
+        car.update(heightmap)
+        camera.update()
 
         # Set per-frame struct variables
         ls.currentX = camera.position.x
@@ -115,7 +122,7 @@ def main():
         pygame.display.update()
         clock.tick(settings.fps_cap)
 
-        print(1 / (time.time() - start))
+        #print(1 / (time.time() - start))
 
 
 def render():
@@ -134,10 +141,29 @@ def render():
             [line[3], line[4], line[5]],
         )
 
-    for worf in worfs:
-        surface.blit(worf.image, worf.position.tuple())
+    # Determine height on screen
+    cam_car_distance = distance(camera.position, car.position)
+    temp_horizon = camera.horizon / settings.res_width_ratio
+    temp_scaling = camera.scale_height / settings.res_height_ratio
+    height_on_screen = (camera.height - car.height) / cam_car_distance * temp_scaling + temp_horizon
+
+    # Scale based on distance from camera
+    campy = np.array([camera.position.x, camera.position.y, camera.height])
+    carpy = np.array([car.position.x, car.position.y, car.height])
+    scale_distance = np.linalg.norm(campy - carpy)
+    scale_ratio = (1 / (scale_distance / settings.view_distance)) / 100
+    scaled_car = car.image
+    scaled_car = pygame.transform.scale(scaled_car, (int(scaled_car.get_width() * scale_ratio),
+                                                     int(scaled_car.get_height() * scale_ratio)))
+
+    surface.blit(scaled_car, (int((settings.internal_res_x / 2) - (scaled_car.get_width() / 2)),
+                              int(height_on_screen - (scaled_car.get_height() / 2))))
+
     pygame.transform.scale(surface, screen.get_size(), scaled_surface)
     screen.blit(scaled_surface, (0, 0))
+
+    print(f'camera: {camera.position} {camera.height}\n'
+          f'worf: {car.position} {car.height}')
 
 
 if __name__ == '__main__':

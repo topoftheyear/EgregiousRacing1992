@@ -1,3 +1,5 @@
+import math
+
 import pygame
 
 
@@ -18,10 +20,6 @@ def colormap_to_ctypes(arr, colormap):
     return arr
 
 
-def sign(p1, p2, p3):
-    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y)
-
-
 def point_in_triangle(pt, v1, v2, v3):
     d1 = sign(pt, v1, v2)
     d2 = sign(pt, v2, v3)
@@ -31,6 +29,14 @@ def point_in_triangle(pt, v1, v2, v3):
     has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
 
     return not (has_neg and has_pos)
+
+
+def sign(p1, p2, p3):
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y)
+
+
+def distance(p1, p2):
+    return math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
 
 
 def string_to_pygame_key(string):
