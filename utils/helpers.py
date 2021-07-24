@@ -2,6 +2,8 @@ import math
 
 import pygame
 
+from common.point import Point
+
 
 def heightmap_to_ctypes(arr, heightmap):
     for x in range(heightmap.shape[0]):
@@ -46,6 +48,31 @@ def reduce(num, amount):
         return min(0, num + amount)
     else:
         return num
+
+
+def points_between(p1, p2, rounded=False):
+    dist = distance(p1, p2)
+    if dist == 0:
+        return None
+
+    dx = (p2.x - p1.x) / dist
+    dy = (p2.y - p1.y) / dist
+
+    point_list = list()
+
+    for n in range(math.ceil(dist)):
+        point = None
+        if rounded:
+            point = Point(int(p1.x + n * dx), int(p1.y + n * dy))
+        else:
+            point = Point(p1.x + n * dx, p1.y + n * dy)
+
+        point.x %= 1024
+        point.y %= 1024
+
+        point_list.append(point)
+
+    return point_list
 
 
 def string_to_pygame_key(string):

@@ -15,3 +15,6 @@ class Point:
 
     def __str__(self):
         return f'X:{self.x},Y:{self.y}'
+
+    def __repr__(self):
+        return f'X:{self.x},Y:{self.y}'

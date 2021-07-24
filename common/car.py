@@ -4,7 +4,7 @@ import pygame
 
 from common.point import Point
 from common.settings import Settings
-from utils.helpers import reduce
+from utils.helpers import *
 
 
 class Car:
@@ -69,8 +69,32 @@ class Car:
         # Clean up movement variables
         self.rotation %= 2 * math.pi
 
-        # Gravity
-        self.z_velocity += -9.81 * self.settings.delta_time
+        # Gravity if not touching the ground
+        if self.height > heightmap[math.floor(self.position.x), math.floor(self.position.y)]:
+            self.z_velocity += -9.81 * self.settings.delta_time
+        # Reset velocity to 0 if velocity is negative
+        else:
+            if self.z_velocity < 0:
+                self.z_velocity = 0
+
+        # Get points list based on velocity
+        future_pos = Point(self.position.x, self.position.y)
+        future_pos.x += self.x_velocity
+        future_pos.y += self.y_velocity
+
+        points_list = points_between(self.position, future_pos, True)
+
+        if points_list is not None:
+            # Derive z velocity based on supposed height gain
+            height_list = list()
+            for point in points_list:
+                height_list.append(heightmap[point.x, point.y])
+
+            if len(height_list) > 0:
+                max_height = max(height_list)
+
+                if max_height > self.height:
+                    self.z_velocity += abs(self.x_velocity + self.y_velocity) * (max_height - self.height) * self.settings.delta_time
 
         # Set position based on velocity
         self.position.x += self.x_velocity
@@ -81,8 +105,10 @@ class Car:
         self.position.x %= 1024
         self.position.y %= 1024
 
-        self.height = max(self.height, heightmap[math.floor(self.position.x), math.floor(self.position.y)])
+        heightmap_num = heightmap[math.floor(self.position.x), math.floor(self.position.y)]
+        if self.height <= heightmap_num:
+            self.height = heightmap_num
 
-        # Reduce velocities
-        self.x_velocity = reduce(self.x_velocity, 1 * self.settings.delta_time)
-        self.y_velocity = reduce(self.y_velocity, 1 * self.settings.delta_time)
+            # Reduce velocities if touching ground
+            self.x_velocity = reduce(self.x_velocity, 1 * self.settings.delta_time)
+            self.y_velocity = reduce(self.y_velocity, 1 * self.settings.delta_time)
