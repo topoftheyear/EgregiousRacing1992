@@ -49,6 +49,7 @@ class Car:
                 if event.key == self.settings.rotate_right:
                     self.rotating_right = False
 
+    def update(self, heightmap, camera):
         # Handle key results
         if self.moving_forward:
             self.x_velocity += self.acceleration_speed * math.sin(self.rotation - math.pi) * self.settings.delta_time
@@ -57,14 +58,17 @@ class Car:
             self.x_velocity += -self.acceleration_speed * math.sin(self.rotation - math.pi) * self.settings.delta_time
             self.y_velocity += -self.acceleration_speed * math.cos(self.rotation - math.pi) * self.settings.delta_time
         if self.rotating_left:
-            self.rotation += math.pi / 2 * self.settings.delta_time
+            amt = math.pi / 2 * self.settings.delta_time
+            self.rotation += amt
+            camera.rotation += amt
         if self.rotating_right:
-            self.rotation += -math.pi / 2 * self.settings.delta_time
+            amt = -math.pi / 2 * self.settings.delta_time
+            self.rotation += amt
+            camera.rotation += amt
 
         # Clean up movement variables
         self.rotation %= 2 * math.pi
 
-    def update(self, heightmap):
         # Gravity
         self.z_velocity += -9.81 * self.settings.delta_time
 

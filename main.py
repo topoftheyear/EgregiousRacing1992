@@ -105,7 +105,7 @@ def main():
         quality = max(quality, 0)
 
         # Update objects
-        car.update(heightmap)
+        car.update(heightmap, camera)
         camera.update(heightmap)
 
         # Set per-frame struct variables
