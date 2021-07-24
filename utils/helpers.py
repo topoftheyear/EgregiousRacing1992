@@ -39,6 +39,15 @@ def distance(p1, p2):
     return math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
 
 
+def reduce(num, amount):
+    if num > 0:
+        return max(0, num - amount)
+    elif num < 0:
+        return min(0, num + amount)
+    else:
+        return num
+
+
 def string_to_pygame_key(string):
     keymap = {
         'a': pygame.K_a,

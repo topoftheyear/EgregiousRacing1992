@@ -25,18 +25,18 @@ class Settings(metaclass=Singleton):
 
         # Controls
         controls = self.config['Controls']
-        self.camera_rotation_speed = float(controls['CameraRotationSpeed'])
         self.mouse_sensitivity = float(controls['MouseSensitivity'])
-        self.move_forward = string_to_pygame_key(controls['MoveForward'])
-        self.move_backward = string_to_pygame_key(controls['MoveBackward'])
-        self.move_left = string_to_pygame_key(controls['MoveLeft'])
-        self.move_right = string_to_pygame_key(controls['MoveRight'])
-        self.move_up = string_to_pygame_key(controls['MoveUp'])
-        self.move_down = string_to_pygame_key(controls['MoveDown'])
+        self.accelerate = string_to_pygame_key(controls['Accelerate'])
+        self.decelerate = string_to_pygame_key(controls['Decelerate'])
+        self.rotate_left = string_to_pygame_key(controls['RotateLeft'])
+        self.rotate_right = string_to_pygame_key(controls['RotateRight'])
 
         # Derived settings
         self.res_width_ratio = self.res_x / self.internal_res_x
         self.res_height_ratio = self.res_y / self.internal_res_y
+
+        # Other useful settings
+        self.delta_time = 0
 
     def save(self):
         with open('settings.ini', 'w') as configfile:

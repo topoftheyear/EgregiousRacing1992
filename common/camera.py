@@ -23,11 +23,8 @@ class Camera:
         # Handle mouse wheel
         for event in events:
             if event.type == pygame.MOUSEWHEEL:
-                print(event)
-                if event.y > 0:
-                    self.distance -= 5
-                elif event.y < 0:
-                    self.distance += 5
+                if event.y != 0:
+                    self.distance += 5 * -event.y
 
         self.distance = max(5, self.distance)
 
@@ -41,9 +38,15 @@ class Camera:
         self.rotation %= 2 * math.pi
         self.v_rotation = max(3 * math.pi / 2 + 0.05, min(self.v_rotation, 2 * math.pi - 0.05))
 
-    def update(self):
+    def update(self, heightmap):
         # Set camera position and height based on current rotation and player position
         self.position.x = -self.distance * math.sin(self.rotation) * math.sin(self.v_rotation) + self.player.position.x
         self.position.y = -self.distance * math.cos(self.rotation) * math.sin(self.v_rotation) + self.player.position.y
         self.height = int(-self.distance * math.sin(self.v_rotation - (math.pi / 2)) + self.player.height)
         self.horizon = (0.42 * self.base_horizon) * -math.tan(self.v_rotation + (math.pi / 2)) + self.base_horizon
+
+        # Clean up camera position
+        self.position.x %= 1024
+        self.position.y %= 1024
+
+        self.height = max(self.height, heightmap[int(self.position.x), int(self.position.y)] + 1)

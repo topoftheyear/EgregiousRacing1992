@@ -99,13 +99,14 @@ def main():
                     sys.exit()
 
         # Handle inputs
+        car.handle_input(events)
         camera.handle_input(events)
 
         quality = max(quality, 0)
 
         # Update objects
         car.update(heightmap)
-        camera.update()
+        camera.update(heightmap)
 
         # Set per-frame struct variables
         ls.currentX = camera.position.x
@@ -117,10 +118,14 @@ def main():
         ls.distance = settings.view_distance
         ls.quality = quality
 
+        # Draw objects
         render()
 
         pygame.display.update()
+
+        # Update clock and delta time
         clock.tick(settings.fps_cap)
+        settings.delta_time = clock.get_time() / 1000
 
         #print(1 / (time.time() - start))
 
@@ -161,9 +166,6 @@ def render():
 
     pygame.transform.scale(surface, screen.get_size(), scaled_surface)
     screen.blit(scaled_surface, (0, 0))
-
-    print(f'camera: {camera.position} {camera.height}\n'
-          f'worf: {car.position} {car.height}')
 
 
 if __name__ == '__main__':
