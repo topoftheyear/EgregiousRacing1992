@@ -30,6 +30,7 @@ class Settings(metaclass=Singleton):
         self.decelerate = string_to_pygame_key(controls['Decelerate'])
         self.rotate_left = string_to_pygame_key(controls['RotateLeft'])
         self.rotate_right = string_to_pygame_key(controls['RotateRight'])
+        self.reset_camera = string_to_pygame_key(controls['ResetCamera'])
 
         # Derived settings
         self.res_width_ratio = self.res_x / self.internal_res_x

@@ -25,6 +25,10 @@ class Camera:
             if event.type == pygame.MOUSEWHEEL:
                 if event.y != 0:
                     self.distance += 5 * -event.y
+            if event.type == pygame.KEYDOWN:
+                if event.key == self.settings.reset_camera:
+                    self.rotation = self.player.rotation
+                    self.v_rotation = 0
 
         self.distance = max(5, self.distance)
 
@@ -36,7 +40,7 @@ class Camera:
             self.v_rotation += math.radians(mouse_y) * self.settings.mouse_sensitivity
 
         self.rotation %= 2 * math.pi
-        self.v_rotation = max(3 * math.pi / 2 + 0.05, min(self.v_rotation, 2 * math.pi - 0.05))
+        self.v_rotation = max(3 * math.pi / 2 + 0.05, min(self.v_rotation, int(2 * math.pi - 0.05)))
 
     def update(self, heightmap):
         # Set camera position and height based on current rotation and player position

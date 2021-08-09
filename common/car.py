@@ -109,6 +109,10 @@ class Car:
         if self.height <= heightmap_num:
             self.height = heightmap_num
 
-            # Reduce velocities if touching ground
-            self.x_velocity = reduce(self.x_velocity, 1 * self.settings.delta_time)
-            self.y_velocity = reduce(self.y_velocity, 1 * self.settings.delta_time)
+            # Reduce velocities if touching ground (traditional friction)
+            self.x_velocity = reduce(self.x_velocity, 0.75 * self.settings.delta_time)
+            self.y_velocity = reduce(self.y_velocity, 0.75 * self.settings.delta_time)
+
+        # Reduce velocities by a set amount anyway (air friction)
+        self.x_velocity = reduce(self.x_velocity, 0.25 * self.settings.delta_time)
+        self.y_velocity = reduce(self.y_velocity, 0.25 * self.settings.delta_time)
