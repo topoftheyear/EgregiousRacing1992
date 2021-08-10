@@ -13,7 +13,7 @@ class Car:
         self.image = image
         self.rotation = rotation
         self.height = height
-        self.acceleration_speed = 2
+        self.acceleration_speed = 3
         self.settings = Settings()
 
         self.x_velocity = 0
@@ -25,6 +25,7 @@ class Car:
         self.moving_backward = False
         self.rotating_left = False
         self.rotating_right = False
+        self.braking = False
 
     def handle_input(self, events):
         # Check keys
@@ -38,6 +39,8 @@ class Car:
                     self.rotating_left = True
                 if event.key == self.settings.rotate_right:
                     self.rotating_right = True
+                if event.key == self.settings.handbrake:
+                    self.braking = True
 
             if event.type == pygame.KEYUP:
                 if event.key == self.settings.accelerate:
@@ -48,15 +51,22 @@ class Car:
                     self.rotating_left = False
                 if event.key == self.settings.rotate_right:
                     self.rotating_right = False
+                if event.key == self.settings.handbrake:
+                    self.braking = False
 
     def update(self, heightmap, camera):
         # Handle key results
-        if self.moving_forward:
-            self.x_velocity += self.acceleration_speed * math.sin(self.rotation - math.pi) * self.settings.delta_time
-            self.y_velocity += self.acceleration_speed * math.cos(self.rotation - math.pi) * self.settings.delta_time
-        if self.moving_backward:
-            self.x_velocity += -self.acceleration_speed * math.sin(self.rotation - math.pi) * self.settings.delta_time
-            self.y_velocity += -self.acceleration_speed * math.cos(self.rotation - math.pi) * self.settings.delta_time
+        # velocity changes shouldn't be able to happen in the air
+        if self.height <= heightmap[math.floor(self.position.x), math.floor(self.position.y)]:
+            if self.braking:
+                self.x_velocity = reduce(self.x_velocity, 2 * self.settings.delta_time)
+                self.y_velocity = reduce(self.y_velocity, 2 * self.settings.delta_time)
+            if self.moving_forward:
+                self.x_velocity += self.acceleration_speed * math.sin(self.rotation - math.pi) * self.settings.delta_time
+                self.y_velocity += self.acceleration_speed * math.cos(self.rotation - math.pi) * self.settings.delta_time
+            if self.moving_backward:
+                self.x_velocity += -self.acceleration_speed * math.sin(self.rotation - math.pi) * self.settings.delta_time
+                self.y_velocity += -self.acceleration_speed * math.cos(self.rotation - math.pi) * self.settings.delta_time
         if self.rotating_left:
             amt = math.pi / 2 * self.settings.delta_time
             self.rotation += amt
