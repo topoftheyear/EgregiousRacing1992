@@ -2,17 +2,17 @@ import math
 
 import pygame
 
+from common.game_object import GameObject
 from common.point import Point
 from common.settings import Settings
 from utils.helpers import *
 
 
-class Car:
+class Car(GameObject):
     def __init__(self, position, image, rotation=0, height=50):
-        self.position = position
+        super().__init__(position, height)
         self.image = image
         self.rotation = rotation
-        self.height = height
         self.acceleration_speed = 3
         self.settings = Settings()
 
@@ -104,7 +104,7 @@ class Car:
                 max_height = max(height_list)
 
                 if max_height > self.height:
-                    self.z_velocity += abs(self.x_velocity + self.y_velocity) * (max_height - self.height) * self.settings.delta_time
+                    self.z_velocity += abs(self.x_velocity + self.y_velocity) * (max_height - self.height) * 1.5 * self.settings.delta_time
 
         # Set position based on velocity
         self.position.x += self.x_velocity

@@ -20,7 +20,7 @@ class Settings(metaclass=Singleton):
         self.quality_chunks = float(quality['QualityChunks'])
         self.internal_res_x = int(quality['InternalResX'])
         self.internal_res_y = int(quality['InternalResY'])
-        self.view_distance = int(quality['ViewDistance'])
+        self.view_distance = 800
         self.fps_cap = int(quality['FPSCap'])
 
         # Controls

@@ -40,6 +40,8 @@ class LineStruct(ctypes.Structure):
     _fields_ = [
         ('lines', (ctypes.c_int * 6) * 1000000),
         ('numLines', ctypes.c_int),
+        ('objects', (ctypes.c_int * 6) * 10000),
+        ('numObjects', ctypes.c_int),
         ('heightMap', (ctypes.c_int * 1024) * 1024),
         ('colorMap', ((ctypes.c_int * 3) * 1024) * 1024),
         ('currentX', ctypes.c_float),
@@ -61,13 +63,20 @@ line_calculator.get_lines.restype = None
 
 ls = LineStruct()
 
-#worf = Sprite('img/worf.png', Point(500, 500))
+object_list = dict()
+
 worf = pygame.image.load('img/worf.png').convert_alpha()
 worf = pygame.transform.scale(worf, (int(worf.get_width() / settings.res_width_ratio),
                                      int(worf.get_height() / settings.res_height_ratio)))
 
 car = Car(Point(10, 10), worf, height=1000)
 camera = Camera(car)
+
+object_list[car.id] = car
+
+for _ in range(10):
+    temp = Car(Point(random.randint(0, 1023), random.randint(0, 1023)), worf, height=1000)
+    object_list[temp.id] = temp
 
 
 def main():
@@ -105,7 +114,9 @@ def main():
         quality = max(quality, 0)
 
         # Update objects
-        car.update(heightmap, camera)
+        for obj in object_list.values():
+            obj.update(heightmap, camera)
+
         camera.update(heightmap)
 
         # Set per-frame struct variables
@@ -117,6 +128,17 @@ def main():
         ls.scaleHeight = camera.scale_height / settings.res_height_ratio
         ls.distance = settings.view_distance
         ls.quality = quality
+        ls.numObjects = len(object_list.keys())
+        x = 0
+        for obj in object_list.values():
+            ls.objects[x][0] = obj.id
+            ls.objects[x][1] = int(obj.position.x)
+            ls.objects[x][2] = int(obj.position.y)
+            ls.objects[x][3] = int(obj.height)
+            ls.objects[x][4] = 0
+            ls.objects[x][5] = 0
+
+            x += 1
 
         # Draw objects
         render()
@@ -146,23 +168,32 @@ def render():
             [line[3], line[4], line[5]],
         )
 
-    # Determine height on screen
-    cam_car_distance = distance(camera.position, car.position)
-    temp_horizon = camera.horizon / settings.res_width_ratio
-    temp_scaling = camera.scale_height / settings.res_height_ratio
-    height_on_screen = (camera.height - car.height) / cam_car_distance * temp_scaling + temp_horizon
+    for x in range(ls.numObjects):
+        obj = object_list[ls.objects[x][0]]
+        pos = [ls.objects[x][4], ls.objects[x][5]]
 
-    # Scale based on distance from camera
-    campy = np.array([camera.position.x, camera.position.y, camera.height])
-    carpy = np.array([car.position.x, car.position.y, car.height])
-    scale_distance = np.linalg.norm(campy - carpy)
-    scale_ratio = (1 / (scale_distance / settings.view_distance)) / 100
-    scaled_car = car.image
-    scaled_car = pygame.transform.scale(scaled_car, (int(scaled_car.get_width() * scale_ratio),
-                                                     int(scaled_car.get_height() * scale_ratio)))
+        if pos[0] == 0 and pos[1] == 0:
+            continue
 
-    surface.blit(scaled_car, (int((settings.internal_res_x / 2) - (scaled_car.get_width() / 2)),
-                              int(height_on_screen - (scaled_car.get_height() / 2))))
+        if pos[0] < 0 or pos[0] >= 1023 and pos[1] < 0 or pos[1] >= 1023:
+            continue
+
+        # Scale based on distance from camera
+        campy = np.array([ls.currentX, ls.currentY, ls.height])
+        objpy = np.array([obj.position.x, obj.position.y, obj.height])
+        scale_distance = np.linalg.norm(campy - objpy)
+        scale_ratio = (1 / (scale_distance / settings.view_distance)) / 50
+        scaled_obj = worf
+        scaled_obj = pygame.transform.scale(scaled_obj, (int(scaled_obj.get_width() * scale_ratio),
+                                                         int(scaled_obj.get_height() * scale_ratio)))
+
+        shifted_width = int(pos[0] - (scaled_obj.get_width() / 2))
+        shifted_height = int(pos[1] - (scaled_obj.get_height() / 2))
+
+        surface.blit(
+            scaled_obj,
+            [shifted_width, shifted_height]
+        )
 
     pygame.transform.scale(surface, screen.get_size(), scaled_surface)
     screen.blit(scaled_surface, (0, 0))

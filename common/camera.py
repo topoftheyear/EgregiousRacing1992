@@ -11,7 +11,7 @@ class Camera:
         self.player = player
         self.position = Point()
         self.rotation = rotation
-        self.v_rotation = 0
+        self.v_rotation = 5.705
         self.distance = distance_from_player
         self.height = 0
         self.base_horizon = horizon
@@ -28,7 +28,7 @@ class Camera:
             if event.type == pygame.KEYDOWN:
                 if event.key == self.settings.reset_camera:
                     self.rotation = self.player.rotation
-                    self.v_rotation = 0
+                    self.v_rotation = 5.705
 
         self.distance = max(5, self.distance)
 
