@@ -11,6 +11,7 @@ import pygame.gfxdraw
 
 from common.camera import Camera
 from common.car import Car
+from common.coin import Coin
 from common.settings import Settings
 from common.point import Point
 from utils.helpers import *
@@ -75,7 +76,7 @@ camera = Camera(car)
 object_list[car.id] = car
 
 for _ in range(10):
-    temp = Car(Point(random.randint(0, 1023), random.randint(0, 1023)), worf, height=1000)
+    temp = Coin(Point(random.randint(0, 1023), random.randint(0, 1023)), height=0)
     object_list[temp.id] = temp
 
 
@@ -172,6 +173,9 @@ def render():
         obj = object_list[ls.objects[x][0]]
         pos = [ls.objects[x][4], ls.objects[x][5]]
 
+        if obj.id == 0:
+            continue
+
         if pos[0] == 0 and pos[1] == 0:
             continue
 
@@ -183,7 +187,7 @@ def render():
         objpy = np.array([obj.position.x, obj.position.y, obj.height])
         scale_distance = np.linalg.norm(campy - objpy)
         scale_ratio = (1 / (scale_distance / settings.view_distance)) / 50
-        scaled_obj = worf
+        scaled_obj = obj.sprite_sheet.get_image()
         scaled_obj = pygame.transform.scale(scaled_obj, (int(scaled_obj.get_width() * scale_ratio),
                                                          int(scaled_obj.get_height() * scale_ratio)))
 
