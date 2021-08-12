@@ -2,19 +2,22 @@ import math
 
 import pygame
 
+from common.enums import CarAnimStates
 from common.game_object import GameObject
 from common.point import Point
 from common.settings import Settings
+from common.spritesheet import Spritesheet
 from utils.helpers import *
 
 
 class Car(GameObject):
-    def __init__(self, position, image, rotation=0, height=50):
+    def __init__(self, position, rotation=0, height=50):
         super().__init__(position, height)
-        self.image = image
         self.rotation = rotation
         self.acceleration_speed = 3
         self.settings = Settings()
+
+        self.establish_frames()
 
         self.x_velocity = 0
         self.y_velocity = 0
@@ -104,7 +107,7 @@ class Car(GameObject):
                 max_height = max(height_list)
 
                 if max_height > self.height:
-                    self.z_velocity += abs(self.x_velocity + self.y_velocity) * (max_height - self.height) * 1.5 * self.settings.delta_time
+                    self.z_velocity += abs(self.x_velocity + self.y_velocity) * (max_height - self.height) * 1.25 * self.settings.delta_time
 
         # Set position based on velocity
         self.position.x += self.x_velocity
@@ -126,3 +129,67 @@ class Car(GameObject):
         # Reduce velocities by a set amount anyway (air friction)
         self.x_velocity = reduce(self.x_velocity, 0.25 * self.settings.delta_time)
         self.y_velocity = reduce(self.y_velocity, 0.25 * self.settings.delta_time)
+
+        # Animation business
+        # Determine camera facing direction relative to car
+        relative_rotation = (camera.rotation - self.rotation) % (2 * math.pi)
+        direction = ''
+        if relative_rotation > 7 * math.pi / 4 or relative_rotation <= math.pi / 4:
+            direction = 'back'
+        elif math.pi / 4 < relative_rotation <= 3 * math.pi / 4:
+            direction = 'right'
+        elif 3 * math.pi / 4 < relative_rotation <= 5 * math.pi / 4:
+            direction = 'front'
+        elif 5 * math.pi / 4 < relative_rotation <= 7 * math.pi / 4:
+            direction = 'left'
+
+        # Determine movement state
+        if self.x_velocity != 0 or self.y_velocity != 0:
+            direction += 'on'
+        else:
+            direction += 'off'
+
+        # Set animation speed
+        self.sprite_sheet.animation_speed = (abs(self.x_velocity) + abs(self.y_velocity)) * 10
+
+        state_dict = {
+            'backoff': CarAnimStates.back_view_off,
+            'leftoff': CarAnimStates.left_view_off,
+            'frontoff': CarAnimStates.front_view_off,
+            'rightoff': CarAnimStates.right_view_off,
+            'backon': CarAnimStates.back_view_on,
+            'lefton': CarAnimStates.left_view_on,
+            'fronton': CarAnimStates.front_view_on,
+            'righton': CarAnimStates.right_view_on,
+        }
+
+        self.sprite_sheet.current_state = state_dict[direction]
+        self.sprite_sheet.update()
+
+    def establish_frames(self):
+        states = dict()
+        states[CarAnimStates.back_view_off] = [
+            (0, 0, 64, 64)
+        ]
+        states[CarAnimStates.back_view_on] = [
+            (64, 0, 64, 64), (128, 0, 64, 64), (192, 0, 64, 64), (256, 0, 64, 64)
+        ]
+        states[CarAnimStates.left_view_off] = [
+            (0, 64, 64, 64)
+        ]
+        states[CarAnimStates.left_view_on] = [
+            (64, 64, 64, 64), (128, 64, 64, 64), (192, 64, 64, 64), (256, 64, 64, 64)
+        ]
+        states[CarAnimStates.front_view_off] = [
+            (0, 128, 64, 64)
+        ]
+        states[CarAnimStates.front_view_on] = [
+            (64, 128, 64, 64), (128, 128, 64, 64), (192, 128, 64, 64), (256, 128, 64, 64)
+        ]
+        states[CarAnimStates.right_view_off] = [
+            (0, 192, 64, 64)
+        ]
+        states[CarAnimStates.right_view_on] = [
+            (64, 192, 64, 64), (128, 192, 64, 64), (192, 192, 64, 64), (256, 192, 64, 64)
+        ]
+        self.sprite_sheet = Spritesheet('img/car.png', states, 8)

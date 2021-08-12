@@ -10,6 +10,7 @@ class GameObject:
 
         self.position = position
         self.height = height
+        self.sprite_sheet = None
 
     def update(self, heightmap, camera):
         pass

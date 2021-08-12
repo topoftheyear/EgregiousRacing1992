@@ -66,11 +66,7 @@ ls = LineStruct()
 
 object_list = dict()
 
-worf = pygame.image.load('img/worf.png').convert_alpha()
-worf = pygame.transform.scale(worf, (int(worf.get_width() / settings.res_width_ratio),
-                                     int(worf.get_height() / settings.res_height_ratio)))
-
-car = Car(Point(10, 10), worf, height=1000)
+car = Car(Point(10, 10), height=1000)
 camera = Camera(car)
 
 object_list[car.id] = car
@@ -172,9 +168,6 @@ def render():
     for x in range(ls.numObjects):
         obj = object_list[ls.objects[x][0]]
         pos = [ls.objects[x][4], ls.objects[x][5]]
-
-        if obj.id == 0:
-            continue
 
         if pos[0] == 0 and pos[1] == 0:
             continue

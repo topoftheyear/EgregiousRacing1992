@@ -14,7 +14,7 @@ class Coin(GameObject):
             (0, 128, 64, 64), (64, 128, 64, 64)
         ]
 
-        self.sprite_sheet = Spritesheet('img/coin.png', states, 8)
+        self.sprite_sheet = Spritesheet('img/coin.png', states, 8, random_start_frame=True)
 
     def update(self, heightmap, camera):
         self.sprite_sheet.update()
