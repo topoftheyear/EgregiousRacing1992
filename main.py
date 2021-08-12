@@ -21,16 +21,20 @@ settings = Settings()
 
 flags = pygame.DOUBLEBUF
 screen = pygame.display.set_mode((settings.res_x, settings.res_y), flags)
-pygame.display.set_caption("VoxelSpace")
+pygame.display.set_caption('Egregious Racing 1992')
 
 surface = pygame.Surface((settings.internal_res_x, settings.internal_res_y))
 scaled_surface = pygame.Surface(screen.get_size())
 
 clock = pygame.time.Clock()
 
-heightmap = cv2.imread('img/1H.png', 0)
-colormap = cv2.imread('img/1C.png', -1)
+heightmap = cv2.imread('img/D1.png', 0)
+colormap = cv2.imread('img/C1.png', -1)
 colormap = cv2.cvtColor(colormap, cv2.COLOR_BGR2RGB)
+
+# Resize images
+heightmap = cv2.resize(heightmap, (1024, 1024))
+colormap = cv2.resize(colormap, (1024, 1024))
 
 pygame.mouse.set_visible(False)
 pygame.event.set_grab(True)
@@ -66,7 +70,7 @@ ls = LineStruct()
 
 object_list = dict()
 
-car = Car(Point(10, 10), height=1000)
+car = Car(Point(955, 73), height=1000)
 camera = Camera(car)
 
 object_list[car.id] = car
@@ -85,6 +89,7 @@ def main():
     ls.screenWidth = surface.get_width()
     ls.screenHeight = surface.get_height()
 
+    print("Starting loop")
     while 1:
         start = time.time()
 

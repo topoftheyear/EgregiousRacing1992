@@ -1,5 +1,6 @@
 import math
 
+import cv2
 import numpy as np
 import pygame
 
@@ -74,6 +75,42 @@ def points_between(p1, p2, rounded=False):
         point_list.append(point)
 
     return point_list
+
+
+def convert_image_to_palette(image):
+    # retrieve palette
+    palette = cv2.imread('img/palette.png', -1)
+    palette = cv2.cvtColor(palette, cv2.COLOR_BGR2HSV)
+
+    # convert image to hsv (hue, saturation, value)
+    hsvimage = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+
+    # iterate through each pixel
+    for x in range(hsvimage.shape[0]):
+        for y in range(hsvimage.shape[1]):
+            color = hsvimage[x, y]
+
+            # iterate through each color in palette
+            closest_value = 1000000
+            closest_color = color
+            for z in range(palette.shape[1]):
+                p_color = palette[0, z]
+
+                # Determine value
+                h = abs(float(p_color[0]) - float(color[0])) * 0.475
+                s = abs(float(p_color[1]) - float(color[1])) * 0.2375
+                v = abs(float(p_color[2]) - float(color[2])) * 0.2875
+
+                value = h + s + v
+                if value < closest_value:
+                    closest_value = value
+                    closest_color = p_color
+
+            hsvimage[x, y] = closest_color
+
+    # convert image back
+    rgbimage = cv2.cvtColor(hsvimage, cv2.COLOR_HSV2RGB)
+    return rgbimage
 
 
 def string_to_pygame_key(string):
