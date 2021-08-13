@@ -59,17 +59,27 @@ class Car(GameObject):
 
     def update(self, heightmap, camera):
         # Handle key results
-        # velocity changes shouldn't be able to happen in the air
+        # Major velocity changes shouldn't be able to happen in the air
         if self.height <= heightmap[math.floor(self.position.x), math.floor(self.position.y)]:
             if self.braking:
                 self.x_velocity = reduce(self.x_velocity, 2 * self.settings.delta_time)
                 self.y_velocity = reduce(self.y_velocity, 2 * self.settings.delta_time)
             if self.moving_forward:
-                self.x_velocity += self.acceleration_speed * math.sin(self.rotation - math.pi) * self.settings.delta_time
-                self.y_velocity += self.acceleration_speed * math.cos(self.rotation - math.pi) * self.settings.delta_time
+                self.x_velocity += -self.acceleration_speed * math.sin(self.rotation) * self.settings.delta_time
+                self.y_velocity += -self.acceleration_speed * math.cos(self.rotation) * self.settings.delta_time
             if self.moving_backward:
-                self.x_velocity += -self.acceleration_speed * math.sin(self.rotation - math.pi) * self.settings.delta_time
-                self.y_velocity += -self.acceleration_speed * math.cos(self.rotation - math.pi) * self.settings.delta_time
+                self.x_velocity += self.acceleration_speed * math.sin(self.rotation) * self.settings.delta_time
+                self.y_velocity += self.acceleration_speed * math.cos(self.rotation) * self.settings.delta_time
+
+            print(math.degrees(self.rotation), self.x_velocity, self.y_velocity)
+        # Allow slight velocity changes in the air to make moving downhill easier
+        else:
+            if self.moving_forward:
+                self.x_velocity += (self.acceleration_speed / 4) * math.sin(self.rotation - math.pi) * self.settings.delta_time
+                self.y_velocity += (self.acceleration_speed / 4) * math.cos(self.rotation - math.pi) * self.settings.delta_time
+            if self.moving_backward:
+                self.x_velocity += -(self.acceleration_speed / 4) * math.sin(self.rotation - math.pi) * self.settings.delta_time
+                self.y_velocity += -(self.acceleration_speed / 4) * math.cos(self.rotation - math.pi) * self.settings.delta_time
         if self.rotating_left:
             amt = math.pi / 2 * self.settings.delta_time
             self.rotation += amt
@@ -122,9 +132,12 @@ class Car(GameObject):
         if self.height <= heightmap_num:
             self.height = heightmap_num
 
-            # Reduce velocities if touching ground (traditional friction)
-            self.x_velocity = reduce(self.x_velocity, 0.75 * self.settings.delta_time)
-            self.y_velocity = reduce(self.y_velocity, 0.75 * self.settings.delta_time)
+            # Reduce velocities if touching ground (traditional friction), dependent on car direction
+            x_amount = abs((self.rotation % math.pi) - (math.pi / 2)) / (math.pi / 2) * 1.5
+            y_amount = abs(((self.rotation - (math.pi / 2)) % math.pi) - math.pi / 2) / (math.pi / 2) * 1.5
+
+            self.x_velocity = reduce(self.x_velocity, x_amount * self.settings.delta_time)
+            self.y_velocity = reduce(self.y_velocity, y_amount * self.settings.delta_time)
 
         # Reduce velocities by a set amount anyway (air friction)
         self.x_velocity = reduce(self.x_velocity, 0.25 * self.settings.delta_time)

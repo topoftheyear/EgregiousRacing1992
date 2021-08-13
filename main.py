@@ -70,7 +70,7 @@ ls = LineStruct()
 
 object_list = dict()
 
-car = Car(Point(955, 73), height=1000)
+car = Car(Point(512, 512), height=1000)
 camera = Camera(car)
 
 object_list[car.id] = car
@@ -121,6 +121,25 @@ def main():
 
         camera.update(heightmap)
 
+        objects_to_remove = list()
+        # Check for car collisions with coins
+        for obj in object_list.values():
+            if obj.id == car.id:
+                continue
+
+            carpy = np.array([car.position.x, car.position.y, car.height])
+            objpy = np.array([obj.position.x, obj.position.y, obj.height])
+            scale_distance = np.linalg.norm(carpy - objpy)
+
+            # Remove coin from existence
+            if scale_distance < 5:
+                objects_to_remove.append(obj)
+
+        # Delete objects
+        for obj in objects_to_remove:
+            object_list.pop(obj.id)
+            del obj
+
         # Set per-frame struct variables
         ls.currentX = camera.position.x
         ls.currentY = camera.position.y
@@ -170,9 +189,19 @@ def render():
             [line[3], line[4], line[5]],
         )
 
-    for x in range(ls.numObjects):
-        obj = object_list[ls.objects[x][0]]
-        pos = [ls.objects[x][4], ls.objects[x][5]]
+    # Get sorted object_list by distance from camera
+    temp_dict = dict()
+    for key, value in object_list.items():
+        temp_dict[key] = distance(value.position, camera.position)
+    sorted_objects = dict(sorted(temp_dict.items(), key=lambda item: item[1])[::-1])
+
+    for key in sorted_objects.keys():
+        obj = object_list[key]
+
+        pos = [0, 0]
+        for x in range(ls.numObjects):
+            if key == ls.objects[x][0]:
+                pos = [ls.objects[x][4], ls.objects[x][5]]
 
         if pos[0] == 0 and pos[1] == 0:
             continue
