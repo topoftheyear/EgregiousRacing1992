@@ -61,17 +61,12 @@ class Car(GameObject):
         # Handle key results
         # Major velocity changes shouldn't be able to happen in the air
         if self.height <= heightmap[math.floor(self.position.x), math.floor(self.position.y)]:
-            if self.braking:
-                self.x_velocity = reduce(self.x_velocity, 2 * self.settings.delta_time)
-                self.y_velocity = reduce(self.y_velocity, 2 * self.settings.delta_time)
             if self.moving_forward:
                 self.x_velocity += -self.acceleration_speed * math.sin(self.rotation) * self.settings.delta_time
                 self.y_velocity += -self.acceleration_speed * math.cos(self.rotation) * self.settings.delta_time
             if self.moving_backward:
                 self.x_velocity += self.acceleration_speed * math.sin(self.rotation) * self.settings.delta_time
                 self.y_velocity += self.acceleration_speed * math.cos(self.rotation) * self.settings.delta_time
-
-            print(math.degrees(self.rotation), self.x_velocity, self.y_velocity)
         # Allow slight velocity changes in the air to make moving downhill easier
         else:
             if self.moving_forward:
@@ -128,20 +123,35 @@ class Car(GameObject):
         self.position.x %= 1024
         self.position.y %= 1024
 
+        # Total velocity reductions
+        total_velocity = abs(self.x_velocity) + abs(self.y_velocity)
+        x_percent = 100 if total_velocity == 0 else abs(self.x_velocity) / total_velocity
+        y_percent = 100 if total_velocity == 0 else abs(self.y_velocity) / total_velocity
+        x_reduction = 0
+        y_reduction = 0
+
         heightmap_num = heightmap[math.floor(self.position.x), math.floor(self.position.y)]
         if self.height <= heightmap_num:
             self.height = heightmap_num
 
             # Reduce velocities if touching ground (traditional friction), dependent on car direction
-            x_amount = abs((self.rotation % math.pi) - (math.pi / 2)) / (math.pi / 2) * 1.5
-            y_amount = abs(((self.rotation - (math.pi / 2)) % math.pi) - math.pi / 2) / (math.pi / 2) * 1.5
+            x_reduction += abs((self.rotation % math.pi) - (math.pi / 2)) / (math.pi / 2) * 3 + 0.5
+            y_reduction += abs(((self.rotation - (math.pi / 2)) % math.pi) - math.pi / 2) / (math.pi / 2) * 3 + 0.5
 
-            self.x_velocity = reduce(self.x_velocity, x_amount * self.settings.delta_time)
-            self.y_velocity = reduce(self.y_velocity, y_amount * self.settings.delta_time)
+            # Add braking if on the ground
+            if self.braking:
+                x_reduction += 4
+                y_reduction += 4
 
         # Reduce velocities by a set amount anyway (air friction)
-        self.x_velocity = reduce(self.x_velocity, 0.25 * self.settings.delta_time)
-        self.y_velocity = reduce(self.y_velocity, 0.25 * self.settings.delta_time)
+        x_reduction += 0.5
+        y_reduction += 0.5
+
+        x_reduction *= x_percent * self.settings.delta_time
+        y_reduction *= y_percent * self.settings.delta_time
+
+        self.x_velocity = reduce(self.x_velocity, x_reduction)
+        self.y_velocity = reduce(self.y_velocity, y_reduction)
 
         # Animation business
         # Determine camera facing direction relative to car
