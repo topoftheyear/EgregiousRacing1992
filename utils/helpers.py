@@ -12,16 +12,12 @@ def heightmap_to_ctypes(arr, heightmap):
         for y in range(heightmap.shape[1]):
             arr[x][y] = heightmap[x, y]
 
-    return arr
-
 
 def colormap_to_ctypes(arr, colormap):
     for x in range(colormap.shape[0]):
         for y in range(colormap.shape[1]):
             for z in range(colormap.shape[2]):
                 arr[x][y][z] = colormap[x, y, z]
-
-    return arr
 
 
 def point_in_triangle(pt, v1, v2, v3):

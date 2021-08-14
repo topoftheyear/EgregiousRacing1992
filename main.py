@@ -3,18 +3,13 @@ import random
 import sys
 import time
 
-import ctypes
-import cv2
-import numpy as np
 import pygame
 import pygame.gfxdraw
 
-from common.camera import Camera
-from common.car import Car
-from common.coin import Coin
+from common.game_screen import GameScreen
 from common.settings import Settings
-from common.point import Point
 from utils.helpers import *
+from utils.thread import Thread
 
 pygame.init()
 settings = Settings()
@@ -28,66 +23,10 @@ scaled_surface = pygame.Surface(screen.get_size())
 
 clock = pygame.time.Clock()
 
-heightmap = cv2.imread('img/D1.png', 0)
-colormap = cv2.imread('img/C1.png', -1)
-colormap = cv2.cvtColor(colormap, cv2.COLOR_BGR2RGB)
-
-# Resize images
-heightmap = cv2.resize(heightmap, (1024, 1024))
-colormap = cv2.resize(colormap, (1024, 1024))
-
-pygame.mouse.set_visible(False)
-pygame.event.set_grab(True)
-
-
-# establish c function
-class LineStruct(ctypes.Structure):
-    _fields_ = [
-        ('lines', (ctypes.c_int * 6) * 1000000),
-        ('numLines', ctypes.c_int),
-        ('objects', (ctypes.c_int * 6) * 10000),
-        ('numObjects', ctypes.c_int),
-        ('heightMap', (ctypes.c_int * 1024) * 1024),
-        ('colorMap', ((ctypes.c_int * 3) * 1024) * 1024),
-        ('currentX', ctypes.c_float),
-        ('currentY', ctypes.c_float),
-        ('rotation', ctypes.c_float),
-        ('height', ctypes.c_int),
-        ('horizon', ctypes.c_float),
-        ('scaleHeight', ctypes.c_float),
-        ('distance', ctypes.c_int),
-        ('screenWidth', ctypes.c_int),
-        ('screenHeight', ctypes.c_int),
-        ('quality', ctypes.c_float),
-    ]
-
-
-line_calculator = ctypes.CDLL('liblines.dll')
-line_calculator.get_lines.argtypes = [ctypes.POINTER(LineStruct)]
-line_calculator.get_lines.restype = None
-
-ls = LineStruct()
-
-object_list = dict()
-
-car = Car(Point(512, 512), height=1000)
-camera = Camera(car)
-
-object_list[car.id] = car
-
-for _ in range(10):
-    temp = Coin(Point(random.randint(0, 1023), random.randint(0, 1023)), height=0)
-    object_list[temp.id] = temp
-
 
 def main():
-    quality = settings.start_quality
-
-    # Set one-time struct variables
-    ls.heightMap = heightmap_to_ctypes(ls.heightMap, heightmap)
-    ls.colorMap = colormap_to_ctypes(ls.colorMap, colormap)
-    ls.screenWidth = surface.get_width()
-    ls.screenHeight = surface.get_height()
+    current_screen = GameScreen(surface, 'C1')
+    loading_thread = Thread(current_screen.load, ())
 
     print("Starting loop")
     while 1:
@@ -100,69 +39,29 @@ def main():
                 pygame.display.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_EQUALS:
-                    quality -= settings.quality_chunks
-                if event.key == pygame.K_MINUS:
-                    quality += settings.quality_chunks
-
                 if event.key == pygame.K_ESCAPE:
                     pygame.display.quit()
                     sys.exit()
 
-        # Handle inputs
-        car.handle_input(events)
-        camera.handle_input(events)
+        if current_screen.loaded:
+            current_screen.update(events)
+        elif not loading_thread.started:
+            loading_thread.start()
+        else:
+            progress = current_screen.current_loading / current_screen.max_loading
+            pygame.gfxdraw.box(
+                surface,
+                [surface.get_width() / 2 - 25, surface.get_height() / 2 - 5, 50, 10],
+                (255, 255, 255)
+            )
+            pygame.gfxdraw.box(
+                surface,
+                [surface.get_width() / 2 - 24, surface.get_height() / 2 - 4, 48 * progress, 8],
+                (255 * (1 - progress), 255 * progress, 0)
+            )
 
-        quality = max(quality, 0)
-
-        # Update objects
-        for obj in object_list.values():
-            obj.update(heightmap, camera)
-
-        camera.update(heightmap)
-
-        objects_to_remove = list()
-        # Check for car collisions with coins
-        for obj in object_list.values():
-            if obj.id == car.id:
-                continue
-
-            carpy = np.array([car.position.x, car.position.y, car.height])
-            objpy = np.array([obj.position.x, obj.position.y, obj.height])
-            scale_distance = np.linalg.norm(carpy - objpy)
-
-            # Remove coin from existence
-            if scale_distance < 5:
-                objects_to_remove.append(obj)
-
-        # Delete objects
-        for obj in objects_to_remove:
-            object_list.pop(obj.id)
-            del obj
-
-        # Set per-frame struct variables
-        ls.currentX = camera.position.x
-        ls.currentY = camera.position.y
-        ls.rotation = camera.rotation
-        ls.height = camera.height
-        ls.horizon = camera.horizon / settings.res_width_ratio
-        ls.scaleHeight = camera.scale_height / settings.res_height_ratio
-        ls.distance = settings.view_distance
-        ls.quality = quality
-        ls.numObjects = len(object_list.keys())
-        x = 0
-        for obj in object_list.values():
-            ls.objects[x][0] = obj.id
-            ls.objects[x][1] = int(obj.position.x)
-            ls.objects[x][2] = int(obj.position.y)
-            ls.objects[x][3] = int(obj.height)
-            ls.objects[x][4] = 0
-            ls.objects[x][5] = 0
-
-            x += 1
-
-        # Draw objects
-        render()
+        pygame.transform.scale(surface, screen.get_size(), scaled_surface)
+        screen.blit(scaled_surface, (0, 0))
 
         pygame.display.update()
 
@@ -171,63 +70,6 @@ def main():
         settings.delta_time = clock.get_time() / 1000
 
         #print(1 / (time.time() - start))
-
-
-def render():
-    surface.fill((135, 206, 235))
-
-    line_calculator.get_lines(ctypes.byref(ls))
-
-    for x in range(ls.numLines):
-        line = ls.lines[x]
-
-        pygame.gfxdraw.vline(
-            surface,
-            line[0],
-            line[1],
-            line[2],
-            [line[3], line[4], line[5]],
-        )
-
-    # Get sorted object_list by distance from camera
-    temp_dict = dict()
-    for key, value in object_list.items():
-        temp_dict[key] = distance(value.position, camera.position)
-    sorted_objects = dict(sorted(temp_dict.items(), key=lambda item: item[1])[::-1])
-
-    for key in sorted_objects.keys():
-        obj = object_list[key]
-
-        pos = [0, 0]
-        for x in range(ls.numObjects):
-            if key == ls.objects[x][0]:
-                pos = [ls.objects[x][4], ls.objects[x][5]]
-
-        if pos[0] == 0 and pos[1] == 0:
-            continue
-
-        if pos[0] < 0 or pos[0] >= 1023 and pos[1] < 0 or pos[1] >= 1023:
-            continue
-
-        # Scale based on distance from camera
-        campy = np.array([ls.currentX, ls.currentY, ls.height])
-        objpy = np.array([obj.position.x, obj.position.y, obj.height])
-        scale_distance = np.linalg.norm(campy - objpy)
-        scale_ratio = (1 / (scale_distance / settings.view_distance)) / 50
-        scaled_obj = obj.sprite_sheet.get_image()
-        scaled_obj = pygame.transform.scale(scaled_obj, (int(scaled_obj.get_width() * scale_ratio),
-                                                         int(scaled_obj.get_height() * scale_ratio)))
-
-        shifted_width = int(pos[0] - (scaled_obj.get_width() / 2))
-        shifted_height = int(pos[1] - (scaled_obj.get_height() / 2))
-
-        surface.blit(
-            scaled_obj,
-            [shifted_width, shifted_height]
-        )
-
-    pygame.transform.scale(surface, screen.get_size(), scaled_surface)
-    screen.blit(scaled_surface, (0, 0))
 
 
 if __name__ == '__main__':

@@ -16,8 +16,7 @@ class Settings(metaclass=Singleton):
 
         # Quality
         quality = self.config['Quality']
-        self.start_quality = float(quality['StartQuality'])
-        self.quality_chunks = float(quality['QualityChunks'])
+        self.quality = float(quality['Quality'])
         self.internal_res_x = int(quality['InternalResX'])
         self.internal_res_y = int(quality['InternalResY'])
         self.view_distance = 800
