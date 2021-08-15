@@ -10,14 +10,14 @@ from common.car import Car
 from common.camera import Camera
 from common.coin import Coin
 from common.point import Point
-from common.screen import Screen
+from common.screens.screen import Screen
 from common.settings import Settings
 from utils.helpers import heightmap_to_ctypes, colormap_to_ctypes, distance
 
 
 class GameScreen(Screen):
-    def __init__(self, surface, gmap):
-        super().__init__(surface)
+    def __init__(self):
+        super().__init__()
         self.mouse_visible = False
         self.mouse_grab = True
 
@@ -27,7 +27,7 @@ class GameScreen(Screen):
 
         self.ls = LineStruct()
 
-        self.selected_map = gmap
+        self.selected_map = 'C1'
         self.heightmap = None
         self.colormap = None
 
@@ -56,8 +56,8 @@ class GameScreen(Screen):
         # Convert maps to ctypes and set to ls, set other one-time struct variables
         heightmap_to_ctypes(self.ls.heightMap, self.heightmap)
         colormap_to_ctypes(self.ls.colorMap, self.colormap)
-        self.ls.screenWidth = self.surface.get_width()
-        self.ls.screenHeight = self.surface.get_height()
+        self.ls.screenWidth = self.settings.internal_res_x
+        self.ls.screenHeight = self.settings.internal_res_y
         self.ls.quality = self.settings.quality
         self.current_loading += 1
 
@@ -123,11 +123,8 @@ class GameScreen(Screen):
 
             x += 1
 
-        # Draw objects
-        self.render()
-
-    def render(self):
-        self.surface.fill((135, 206, 235))
+    def render(self, surface):
+        surface.fill((135, 206, 235))
 
         self.line_calculator.get_lines(ctypes.byref(self.ls))
 
@@ -135,7 +132,7 @@ class GameScreen(Screen):
             line = self.ls.lines[x]
 
             pygame.gfxdraw.vline(
-                self.surface,
+                surface,
                 line[0],
                 line[1],
                 line[2],
@@ -174,7 +171,7 @@ class GameScreen(Screen):
             shifted_width = int(pos[0] - (scaled_obj.get_width() / 2))
             shifted_height = int(pos[1] - (scaled_obj.get_height() / 2))
 
-            self.surface.blit(
+            surface.blit(
                 scaled_obj,
                 [shifted_width, shifted_height]
             )

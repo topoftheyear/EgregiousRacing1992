@@ -1,8 +1,7 @@
 class Screen:
-    def __init__(self, surface):
-        self.surface = surface
+    def __init__(self):
         self.current_loading = 0
-        self.max_loading = 0
+        self.max_loading = 1
         self.loaded = False
         self.mouse_visible = True
         self.mouse_grab = False
@@ -13,5 +12,5 @@ class Screen:
     def update(self, events):
         pass
 
-    def render(self):
+    def render(self, surface):
         pass

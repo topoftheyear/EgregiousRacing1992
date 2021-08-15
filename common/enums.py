@@ -13,3 +13,11 @@ class CarAnimStates:
     right_view_on = 6
     front_view_off = 7
     front_view_on = 8
+
+
+class Screens:
+    none = 0
+    main_menu = 1
+    settings = 2
+    leaderboards = 3
+    game = 4
