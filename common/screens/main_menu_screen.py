@@ -4,6 +4,8 @@ import pygame
 import pygame.gfxdraw
 
 from common.button import Button
+from common.enums import Screens
+from common.game_manager import GameManager
 from common.settings import Settings
 from common.screens.screen import Screen
 
@@ -12,6 +14,7 @@ class MainMenuScreen(Screen):
     def __init__(self):
         super().__init__()
         self.settings = Settings()
+        self.gm = GameManager()
         self.selected = 0
         self.selections = [
             'Arcade Mode',
@@ -62,14 +65,19 @@ class MainMenuScreen(Screen):
                 if event.key == self.settings.decelerate:
                     self.selected += 1
                 if event.key == self.settings.handbrake:
-                    # user selected their selection
-                    pass
+                    self.handle_selection()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    # user selected their selection
-                    pass
+                    self.handle_selection()
 
         self.selected %= len(self.selections)
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = (mouse_pos[0] / self.settings.res_width_ratio, mouse_pos[1] / self.settings.res_height_ratio)
+        for x in range(len(self.buttons)):
+            button = self.buttons[x]
+            if button.rect.collidepoint(mouse_pos):
+                self.selected = x
 
     def render(self, surface):
         # Render buttons
@@ -78,3 +86,14 @@ class MainMenuScreen(Screen):
 
             if button == self.buttons[self.selected]:
                 pygame.gfxdraw.rectangle(surface, button.rect, (229, 59, 68))
+
+    def handle_selection(self):
+        if self.selected == 0:
+            self.gm.current_screen = Screens.game
+        elif self.selected == 1:
+            self.gm.current_screen = None
+        elif self.selected == 2:
+            self.gm.current_screen = None
+        elif self.selected == 3:
+            pygame.display.quit()
+            sys.exit()

@@ -29,8 +29,6 @@ def main():
 
     clock = pygame.time.Clock()
 
-    current_screen = Screens.main_menu
-
     mms = MainMenuScreen()
     mms_thread = Thread(mms.load, ())
     ss = MainMenuScreen()
@@ -39,8 +37,7 @@ def main():
     lbs_thread = Thread(lbs.load, ())
     gs = GameScreen()
     gs_thread = Thread(gs.load, ())
-
-    screens = {
+    states = {
         Screens.main_menu: {
             'screen': mms,
             'thread': mms_thread,
@@ -59,6 +56,8 @@ def main():
         },
     }
 
+    gm.screens = states
+
     print("Starting loop")
     while 1:
         start = time.time()
@@ -74,8 +73,8 @@ def main():
                     pygame.display.quit()
                     sys.exit()
 
-        cscreen = screens[current_screen]['screen']
-        thread = screens[current_screen]['thread']
+        cscreen = gm.screens[gm.current_screen]['screen']
+        thread = gm.screens[gm.current_screen]['thread']
 
         if cscreen.loaded:
             pygame.mouse.set_visible(cscreen.mouse_visible)
