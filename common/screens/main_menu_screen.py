@@ -18,7 +18,7 @@ class MainMenuScreen(Screen):
         self.selected = 0
         self.selections = [
             'Arcade Mode',
-            'Leaderboards',
+            'Leaderboard',
             'Settings',
             'Quit'
         ]
@@ -50,6 +50,12 @@ class MainMenuScreen(Screen):
 
         self.loaded = True
 
+    def unload(self):
+        super().unload()
+
+        self.selected = 0
+        self.buttons = list()
+
     def update(self, events):
         # Check keys
         for event in events:
@@ -80,6 +86,8 @@ class MainMenuScreen(Screen):
                 self.selected = x
 
     def render(self, surface):
+        surface.fill((0, 0, 0))
+
         # Render buttons
         for button in self.buttons:
             button.render(surface)
@@ -89,11 +97,11 @@ class MainMenuScreen(Screen):
 
     def handle_selection(self):
         if self.selected == 0:
-            self.gm.current_screen = Screens.game
+            self.gm.change_screens(Screens.game)
         elif self.selected == 1:
-            self.gm.current_screen = None
+            self.gm.change_screens(Screens.leaderboard)
         elif self.selected == 2:
-            self.gm.current_screen = None
+            self.gm.change_screens(Screens.settings)
         elif self.selected == 3:
             pygame.display.quit()
             sys.exit()

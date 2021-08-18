@@ -19,5 +19,6 @@ class Screens:
     none = 0
     main_menu = 1
     settings = 2
-    leaderboards = 3
+    leaderboard = 3
     game = 4
+    map_select = 5

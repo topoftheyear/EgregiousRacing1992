@@ -9,6 +9,10 @@ class Screen:
     def load(self):
         pass
 
+    def unload(self):
+        self.loaded = False
+        self.current_loading = 0
+
     def update(self, events):
         pass
 

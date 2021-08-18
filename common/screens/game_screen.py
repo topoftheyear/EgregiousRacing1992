@@ -73,6 +73,18 @@ class GameScreen(Screen):
 
         self.loaded = True
 
+    def unload(self):
+        super().unload()
+
+        self.heightmap = None
+        self.colormap = None
+
+        self.object_list = dict()
+        self.car = None
+        self.camera = None
+
+
+
     def update(self, events):
         # Handle inputs
         self.car.handle_input(events)

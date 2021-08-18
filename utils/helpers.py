@@ -1,4 +1,5 @@
 import math
+import os
 
 import cv2
 import numpy as np
@@ -107,6 +108,20 @@ def convert_image_to_palette(image):
     # convert image back
     rgbimage = cv2.cvtColor(hsvimage, cv2.COLOR_HSV2RGB)
     return rgbimage
+
+
+def get_list_of_maps(as_files=True):
+    maps = list()
+    for file in os.listdir('img'):
+        if file.endswith('.png') and file.startswith('C') and not file.endswith('H.png'):
+            map_name = file
+            if not as_files:
+                stripped = file.strip('.png')
+                map_name = stripped[1:]
+            maps.append(map_name)
+
+    return maps
+
 
 
 def string_to_pygame_key(string):

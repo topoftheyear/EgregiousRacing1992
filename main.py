@@ -9,6 +9,7 @@ import pygame.gfxdraw
 from common.enums import Screens
 from common.game_manager import GameManager
 from common.screens.game_screen import GameScreen
+from common.screens.leaderboard_screen import LeaderboardScreen
 from common.screens.main_menu_screen import MainMenuScreen
 from common.settings import Settings
 from utils.helpers import *
@@ -22,7 +23,7 @@ def main():
 
     flags = pygame.DOUBLEBUF
     screen = pygame.display.set_mode((settings.res_x, settings.res_y), flags)
-    pygame.display.set_caption('Egregious Racing 1992')
+    #pygame.display.set_caption('Egregious Racing 1992')
 
     surface = pygame.Surface((settings.internal_res_x, settings.internal_res_y))
     scaled_surface = pygame.Surface(screen.get_size())
@@ -33,7 +34,7 @@ def main():
     mms_thread = Thread(mms.load, ())
     ss = MainMenuScreen()
     ss_thread = Thread(ss.load, ())
-    lbs = MainMenuScreen()
+    lbs = LeaderboardScreen()
     lbs_thread = Thread(lbs.load, ())
     gs = GameScreen()
     gs_thread = Thread(gs.load, ())
@@ -46,7 +47,7 @@ def main():
             'screen': ss,
             'thread': ss_thread,
         },
-        Screens.leaderboards: {
+        Screens.leaderboard: {
             'screen': lbs,
             'thread': lbs_thread,
         },
@@ -92,7 +93,7 @@ def main():
             )
             pygame.gfxdraw.box(
                 surface,
-                [surface.get_width() / 2 - 24, surface.get_height() / 2 - 4, 48 * progress, 8],
+                [surface.get_width() / 2 - 24, surface.get_height() / 2 - 4, max(1, 48 * progress), 8],
                 (255 * (1 - progress), 255 * progress, 0)
             )
 
