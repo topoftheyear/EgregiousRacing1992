@@ -9,6 +9,7 @@ import pygame.gfxdraw
 from common.car import Car
 from common.camera import Camera
 from common.coin import Coin
+from common.game_manager import GameManager
 from common.point import Point
 from common.screens.screen import Screen
 from common.settings import Settings
@@ -27,11 +28,11 @@ class GameScreen(Screen):
 
         self.ls = LineStruct()
 
-        self.selected_map = 'C1'
         self.heightmap = None
         self.colormap = None
 
         self.settings = Settings()
+        self.gm = GameManager()
 
         self.object_list = dict()
         self.car = None
@@ -43,8 +44,8 @@ class GameScreen(Screen):
         self.current_loading = 0
 
         # Load in selected heightmap and colormap
-        self.heightmap = cv2.imread(f'img/{self.selected_map}H.png', 0)
-        self.colormap = cv2.imread(f'img/{self.selected_map}.png', -1)
+        self.heightmap = cv2.imread(f'img/C{self.gm.selected_map}H.png', 0)
+        self.colormap = cv2.imread(f'img/C{self.gm.selected_map}.png', -1)
         self.colormap = cv2.cvtColor(self.colormap, cv2.COLOR_BGR2RGB)
         self.current_loading += 1
 
@@ -82,8 +83,6 @@ class GameScreen(Screen):
         self.object_list = dict()
         self.car = None
         self.camera = None
-
-
 
     def update(self, events):
         # Handle inputs

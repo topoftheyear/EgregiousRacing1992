@@ -97,7 +97,7 @@ class MainMenuScreen(Screen):
 
     def handle_selection(self):
         if self.selected == 0:
-            self.gm.change_screens(Screens.game)
+            self.gm.change_screens(Screens.map_select)
         elif self.selected == 1:
             self.gm.change_screens(Screens.leaderboard)
         elif self.selected == 2:

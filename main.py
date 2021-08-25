@@ -11,6 +11,7 @@ from common.game_manager import GameManager
 from common.screens.game_screen import GameScreen
 from common.screens.leaderboard_screen import LeaderboardScreen
 from common.screens.main_menu_screen import MainMenuScreen
+from common.screens.map_select_screen import MapSelectScreen
 from common.screens.settings_screen import SettingsScreen
 from common.settings import Settings
 from utils.helpers import *
@@ -37,6 +38,8 @@ def main():
     ss_thread = Thread(ss.load, ())
     lbs = LeaderboardScreen()
     lbs_thread = Thread(lbs.load, ())
+    mss = MapSelectScreen()
+    mss_thread = Thread(mss.load, ())
     gs = GameScreen()
     gs_thread = Thread(gs.load, ())
     states = {
@@ -52,10 +55,14 @@ def main():
             'screen': lbs,
             'thread': lbs_thread,
         },
+        Screens.map_select: {
+            'screen': mss,
+            'thread': mss_thread,
+        },
         Screens.game: {
             'screen': gs,
             'thread': gs_thread,
-        },
+        }
     }
 
     gm.screens = states
@@ -79,6 +86,8 @@ def main():
         thread = gm.screens[gm.current_screen]['thread']
 
         if cscreen.loaded:
+            gm.unload_previous_screen()
+
             pygame.mouse.set_visible(cscreen.mouse_visible)
             pygame.event.set_grab(cscreen.mouse_grab)
             cscreen.update(events)
