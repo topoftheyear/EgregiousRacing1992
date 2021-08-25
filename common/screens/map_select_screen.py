@@ -148,7 +148,7 @@ class MapSelectScreen(Screen):
 
         # Draw the map
         map_img = self.map_images[list(self.map_images.keys())[self.current_map]]
-        temp_img = pygame.transform.rotate(map_img, 45 * math.cos(self.map_rotation) - 90)
+        temp_img = pygame.transform.rotate(map_img, 45 * math.cos(self.map_rotation))
         surface.blit(
             temp_img,
             [math.ceil(self.settings.internal_res_x / 2 - temp_img.get_width() / 2),
