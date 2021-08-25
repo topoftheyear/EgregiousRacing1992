@@ -148,7 +148,7 @@ class MapSelectScreen(Screen):
 
         # Draw the map
         map_img = self.map_images[list(self.map_images.keys())[self.current_map]]
-        temp_img = pygame.transform.rotate(map_img, 45 * math.cos(self.map_rotation))
+        temp_img = pygame.transform.rotate(map_img, 35 * math.sin(self.map_rotation))
         surface.blit(
             temp_img,
             [math.ceil(self.settings.internal_res_x / 2 - temp_img.get_width() / 2),
@@ -157,13 +157,13 @@ class MapSelectScreen(Screen):
 
         # Draw map select text
         text_surf = self.gm.font.render('Select a map:', False, (255, 255, 255))
-        surface.blit(text_surf, (self.settings.internal_res_x / 2 - 39, 20))
+        surface.blit(text_surf, (self.settings.internal_res_x / 2 - 39, 10))
 
         # Draw the map name text
         map_name = list(self.map_images.keys())[self.current_map]
         text_surf = self.gm.font.render(map_name, False, (255, 255, 255))
         text_length = len(map_name) * 6
-        surface.blit(text_surf, (self.settings.internal_res_x / 2 - text_length / 2, 30))
+        surface.blit(text_surf, (self.settings.internal_res_x / 2 - text_length / 2, 20))
 
         # Draw the buttons
         for name, button in self.buttons.items():
