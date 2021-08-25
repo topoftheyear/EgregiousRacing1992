@@ -101,6 +101,8 @@ class MapSelectScreen(Screen):
         self.current_map = 0
         self.buttons = dict()
 
+        self.map_rotation = 0
+
     def update(self, events):
         # Check keys
         for event in events:
@@ -149,8 +151,8 @@ class MapSelectScreen(Screen):
         temp_img = pygame.transform.rotate(map_img, 45 * math.cos(self.map_rotation) - 90)
         surface.blit(
             temp_img,
-            [self.settings.internal_res_x / 2 - temp_img.get_width() / 2,
-             self.settings.internal_res_y / 2 - temp_img.get_width() / 2]
+            [math.ceil(self.settings.internal_res_x / 2 - temp_img.get_width() / 2),
+             math.ceil(self.settings.internal_res_y / 2 - temp_img.get_width() / 2)]
         )
 
         # Draw map select text
