@@ -1,0 +1,15 @@
+You can easily add in your own maps to play. You will need your own colormap and heightmap.
+
+1. Ensure the files are named according to the following convention
+    : Colormap: C{mapname}.png
+    : Heightmap: C{heightmap}H.png
+2. Add them to this folder, and they will be automatically recognized. The map select and leaderboard screens will need
+to be closed and reopened to reflect any changes.
+
+Additional notes:
+- Files will be automatically interpreted in 1024x1024 dimensions. The further your maps are from this dimension, the
+more the quality will degrade.
+- If you don't have a heightmap for your map, you can easily convert your image to grayscale in your favorite image
+editor and get an adequate result. Otherwise, you can search online for one or borrow an existing one in this folder.
+- Removed maps will keep their leaderboard in case you add them back. New maps that share a name with an old map will
+use the old map's leaderboard. This is a feature.
