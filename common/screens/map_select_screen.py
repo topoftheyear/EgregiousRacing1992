@@ -130,7 +130,7 @@ class MapSelectScreen(Screen):
         self.nav_y %= len(self.nav_list)
         self.nav_x %= len(self.nav_list[self.nav_y])
 
-        self.map_rotation += math.pi / 64
+        self.map_rotation += math.pi * self.settings.delta_time
         self.map_rotation %= 2 * math.pi
 
         mouse_pos = pygame.mouse.get_pos()
@@ -148,7 +148,7 @@ class MapSelectScreen(Screen):
 
         # Draw the map
         map_img = self.map_images[list(self.map_images.keys())[self.current_map]]
-        temp_img = pygame.transform.rotate(map_img, 35 * math.sin(self.map_rotation))
+        temp_img = pygame.transform.rotate(map_img, 30 * math.sin(self.map_rotation))
         surface.blit(
             temp_img,
             [math.ceil(self.settings.internal_res_x / 2 - temp_img.get_width() / 2),

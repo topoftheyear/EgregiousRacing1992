@@ -106,7 +106,7 @@ class GameScreen(Screen):
             scale_distance = np.linalg.norm(carpy - objpy)
 
             # Remove coin from existence
-            if scale_distance < 5:
+            if scale_distance < 6:
                 objects_to_remove.append(obj)
 
         # Delete objects
