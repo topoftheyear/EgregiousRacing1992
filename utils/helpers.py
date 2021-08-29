@@ -121,3 +121,17 @@ def get_list_of_maps(as_files=True):
             maps.append(map_name)
 
     return maps
+
+
+def wrapping_distance(x1, y1, z1, x2, y2, z2):
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    dz = abs(z2 - z1)
+
+    # wrap x and y but not z
+    if dx > 512:
+        dx = 1024 - dx
+    if dy > 512:
+        dy = 1024 - dy
+
+    return math.sqrt(dx**2 + dy**2 + dz**2)

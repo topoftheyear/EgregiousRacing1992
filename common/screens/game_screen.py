@@ -2,7 +2,6 @@ import ctypes
 import random
 
 import cv2
-import numpy as np
 import pygame
 import pygame.gfxdraw
 
@@ -13,7 +12,7 @@ from common.game_manager import GameManager
 from common.point import Point
 from common.screens.screen import Screen
 from common.settings import Settings
-from utils.helpers import heightmap_to_ctypes, colormap_to_ctypes, distance
+from utils.helpers import heightmap_to_ctypes, colormap_to_ctypes, distance, wrapping_distance
 
 
 class GameScreen(Screen):
@@ -101,9 +100,8 @@ class GameScreen(Screen):
             if obj.id == self.car.id:
                 continue
 
-            carpy = np.array([self.car.position.x, self.car.position.y, self.car.height])
-            objpy = np.array([obj.position.x, obj.position.y, obj.height])
-            scale_distance = np.linalg.norm(carpy - objpy)
+            scale_distance = wrapping_distance(self.car.position.x, self.car.position.y, self.car.height,
+                                               obj.position.x, obj.position.y, obj.height)
 
             # Remove coin from existence
             if scale_distance < 6:
@@ -171,9 +169,8 @@ class GameScreen(Screen):
                 continue
 
             # Scale based on distance from camera
-            campy = np.array([self.ls.currentX, self.ls.currentY, self.ls.height])
-            objpy = np.array([obj.position.x, obj.position.y, obj.height])
-            scale_distance = np.linalg.norm(campy - objpy)
+            scale_distance = wrapping_distance(self.ls.currentX, self.ls.currentY, self.ls.height,
+                                               obj.position.x, obj.position.y, obj.height)
             scale_ratio = (1 / (scale_distance / self.settings.view_distance)) / 50
             scaled_obj = obj.sprite_sheet.get_image()
             scaled_obj = pygame.transform.scale(scaled_obj, (int(scaled_obj.get_width() * scale_ratio),
