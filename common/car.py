@@ -3,6 +3,7 @@ import math
 import pygame
 
 from common.enums import CarAnimStates
+from common.game_manager import GameManager
 from common.game_object import GameObject
 from common.point import Point
 from common.settings import Settings
@@ -13,6 +14,8 @@ from utils.helpers import *
 class Car(GameObject):
     def __init__(self, position, rotation=0, height=50):
         super().__init__(position, height)
+        self.gm = GameManager()
+
         self.rotation = rotation
         self.acceleration_speed = 3
         self.settings = Settings()
@@ -29,6 +32,8 @@ class Car(GameObject):
         self.rotating_left = False
         self.rotating_right = False
         self.braking = False
+
+        self.air_time = 0
 
     def handle_input(self, events):
         # Check keys
@@ -58,6 +63,18 @@ class Car(GameObject):
                     self.braking = False
 
     def update(self, heightmap, camera):
+        # Start timer when touching the ground
+        if self.height <= heightmap[math.floor(self.position.x), math.floor(self.position.y)]:
+            self.gm.timer_started = True
+
+            if self.air_time >= 1:
+                self.gm.score += int(self.air_time * 10)
+
+            self.air_time = 0
+        else:
+            if self.gm.timer_started:
+                self.air_time += self.settings.delta_time * 1.5
+
         # Create total move vector strength
         move_strength = 0
 
@@ -145,7 +162,7 @@ class Car(GameObject):
                 max_height = max(height_list)
 
                 if max_height > self.height:
-                    self.z_velocity += abs(self.x_velocity + self.y_velocity) * (max_height - self.height) * 1.25 * self.settings.delta_time
+                    self.z_velocity += (abs(self.x_velocity) + abs(self.y_velocity)) * (max_height - self.height) * 1.25 * self.settings.delta_time
 
         # Set position based on velocity
         self.position.x += self.x_velocity

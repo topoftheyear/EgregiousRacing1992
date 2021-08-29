@@ -37,6 +37,27 @@ class GameScreen(Screen):
         self.car = None
         self.camera = None
 
+        self.num_coins = 0
+        self.max_coins = 10
+
+        self.air_color_selector = 0
+        self.air_colors = [
+            (255, 231, 98),
+            (251, 146, 43),
+            (229, 59, 68),
+            (158, 40, 53),
+            (4, 132, 209),
+            (44, 232, 244),
+            (255, 255, 255),
+            (175, 191, 210),
+            (79, 103, 129),
+            (50, 115, 69),
+            (99, 198, 77)
+        ]
+        self.descriptor = ''
+
+        self.air_timer = 0
+
         self.max_loading = 4
 
     def load(self):
@@ -66,9 +87,6 @@ class GameScreen(Screen):
         self.camera = Camera(self.car)
         self.object_list[self.car.id] = self.car
 
-        for _ in range(10):
-            temp = Coin(Point(random.randint(0, 1023), random.randint(0, 1023)), height=0)
-            self.object_list[temp.id] = temp
         self.current_loading += 1
 
         self.loaded = True
@@ -83,54 +101,75 @@ class GameScreen(Screen):
         self.car = None
         self.camera = None
 
+        self.air_color_selector = 0
+        self.descriptor = ''
+
+        self.air_timer = 0
+
     def update(self, events):
-        # Handle inputs
-        self.car.handle_input(events)
-        self.camera.handle_input(events)
+        self.gm.update()
 
-        # Update objects
-        for obj in self.object_list.values():
-            obj.update(self.heightmap, self.camera)
+        if not self.gm.game_ended:
+            if self.gm.timer_started:
+                # Handle inputs
+                self.car.handle_input(events)
+                self.camera.handle_input(events)
 
-        self.camera.update(self.heightmap)
+            # Spawn coins if necessary
+            if self.num_coins < self.max_coins:
+                for _ in range(self.max_coins - self.num_coins):
+                    self.num_coins += 1
+                    print(f'spawning coin {self.num_coins}')
+                    temp = Coin(Point(random.randint(0, 1023), random.randint(0, 1023)), height=500)
+                    self.object_list[temp.id] = temp
 
-        objects_to_remove = list()
-        # Check for car collisions with coins
-        for obj in self.object_list.values():
-            if obj.id == self.car.id:
-                continue
+            # Update objects
+            for obj in self.object_list.values():
+                obj.update(self.heightmap, self.camera)
 
-            scale_distance = wrapping_distance(self.car.position.x, self.car.position.y, self.car.height,
-                                               obj.position.x, obj.position.y, obj.height)
+            self.camera.update(self.heightmap)
 
-            # Remove coin from existence
-            if scale_distance < 6:
-                objects_to_remove.append(obj)
+            objects_to_remove = list()
+            # Check for car collisions with coins
+            for obj in self.object_list.values():
+                if obj.id == self.car.id:
+                    continue
 
-        # Delete objects
-        for obj in objects_to_remove:
-            self.object_list.pop(obj.id)
-            del obj
+                scale_distance = wrapping_distance(self.car.position.x, self.car.position.y, self.car.height,
+                                                   obj.position.x, obj.position.y, obj.height)
 
-        # Set per-frame struct variables
-        self.ls.currentX = self.camera.position.x
-        self.ls.currentY = self.camera.position.y
-        self.ls.rotation = self.camera.rotation
-        self.ls.height = self.camera.height
-        self.ls.horizon = self.camera.horizon / self.settings.res_width_ratio
-        self.ls.scaleHeight = self.camera.scale_height / self.settings.res_height_ratio
-        self.ls.distance = self.settings.view_distance
-        self.ls.numObjects = len(self.object_list.keys())
-        x = 0
-        for obj in self.object_list.values():
-            self.ls.objects[x][0] = obj.id
-            self.ls.objects[x][1] = int(obj.position.x)
-            self.ls.objects[x][2] = int(obj.position.y)
-            self.ls.objects[x][3] = int(obj.height)
-            self.ls.objects[x][4] = 0
-            self.ls.objects[x][5] = 0
+                # Remove coin from existence
+                if scale_distance < 6:
+                    self.gm.score += 100
+                    objects_to_remove.append(obj)
+                    self.num_coins -= 1
 
-            x += 1
+            # Delete objects
+            for obj in objects_to_remove:
+                self.object_list.pop(obj.id)
+                del obj
+
+            # Set per-frame struct variables
+            self.ls.currentX = self.camera.position.x
+            self.ls.currentY = self.camera.position.y
+            self.ls.rotation = self.camera.rotation
+            self.ls.height = self.camera.height
+            self.ls.horizon = self.camera.horizon / self.settings.res_width_ratio
+            self.ls.scaleHeight = self.camera.scale_height / self.settings.res_height_ratio
+            self.ls.distance = self.settings.view_distance
+            self.ls.numObjects = len(self.object_list.keys())
+            x = 0
+            for obj in self.object_list.values():
+                self.ls.objects[x][0] = obj.id
+                self.ls.objects[x][1] = int(obj.position.x)
+                self.ls.objects[x][2] = int(obj.position.y)
+                self.ls.objects[x][3] = int(obj.height)
+                self.ls.objects[x][4] = 0
+                self.ls.objects[x][5] = 0
+
+                x += 1
+
+        self.air_timer -= self.settings.delta_time
 
     def render(self, surface):
         surface.fill((135, 206, 235))
@@ -183,6 +222,105 @@ class GameScreen(Screen):
                 scaled_obj,
                 [shifted_width, shifted_height]
             )
+
+        # Draw UI
+        if self.gm.timer == 90:
+            text_surf = self.gm.big_font.render('Ready?', False, (0, 0, 0))
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - 36 + 1, 10 + 1))
+
+            text_surf = self.gm.big_font.render('Ready?', False, (255, 255, 255))
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - 36, 10))
+        elif self.gm.timer >= 89:
+            text_surf = self.gm.big_font.render('Go!', False, (0, 0, 0))
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - 18 + 1, 10 + 1))
+
+            text_surf = self.gm.big_font.render('Go!', False, (255, 255, 255))
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - 18, 10))
+        elif self.gm.timer == 0:
+            text_surf = self.gm.big_font.render('Time!', False, (0, 0, 0))
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - 30 + 1, 10 + 1))
+
+            text_surf = self.gm.big_font.render('Time!', False, (255, 255, 255))
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - 30, 10))
+        else:
+            text = str(int(self.gm.timer * 100) / 100)
+            ones, decimals = text.split('.')
+            if len(decimals) < 2:
+                decimals += '0'
+            ones_length = len(ones) * 12
+            text_surf = self.gm.big_font.render(ones, False, (0, 0, 0))
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - ones_length / 2 + 1, 10 + 1))
+            text_surf = self.gm.font.render(decimals, False, (0, 0, 0))
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 + ones_length / 2 + 1, 17 + 1))
+
+            ratio = 1 - (self.gm.timer / 90)
+            color_lerp = (
+                (ratio * 229) + ((1 - ratio) * 255),
+                (ratio * 59) + ((1 - ratio) * 255),
+                (ratio * 68) + ((1 - ratio) * 255),
+            )
+            text_surf = self.gm.big_font.render(ones, False, color_lerp)
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - ones_length / 2, 10))
+            text_surf = self.gm.font.render(decimals, False, color_lerp)
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 + ones_length / 2, 17))
+
+        # Draw score
+        text = str(self.gm.score)
+        text_length = len(text) * 12
+        text_surf = self.gm.big_font.render(text, False, (0, 0, 0))
+        surface.blit(text_surf, (self.settings.internal_res_x - text_length - 10 + 1, 10 + 1))
+        text_surf = self.gm.big_font.render(text, False, (255, 255, 255))
+        surface.blit(text_surf, (self.settings.internal_res_x - text_length - 10, 10))
+
+        # Draw airtime
+        air_score = int(self.car.air_time * 10)
+        if air_score >= 10:
+            text = '+' + str(air_score)
+            text_length = len(text) * 6
+            text_surf = self.gm.font.render(text, False, (0, 0, 0))
+            surface.blit(text_surf, (self.settings.internal_res_x - text_length - 10 + 1, 30 + 1))
+            text_surf = self.gm.font.render(text, False, (255, 255, 255))
+            surface.blit(text_surf, (self.settings.internal_res_x - text_length - 10, 30))
+
+            if air_score > 1000:
+                self.descriptor = 'How'
+            elif air_score > 500:
+                self.descriptor = 'Mega Mondo Extreme Air'
+            elif air_score > 100:
+                self.descriptor = 'WTF'
+            elif air_score > 50:
+                self.descriptor = 'Colossal Air'
+            elif air_score > 35:
+                self.descriptor = 'Massive Air'
+            elif air_score > 20:
+                self.descriptor = 'Huge Air'
+            elif air_score > 10:
+                self.descriptor = 'Nice Air'
+            else:
+                self.descriptor = ''
+
+            self.air_timer = 1
+
+        if self.air_timer > 0:
+            if self.air_timer != 1:
+                self.descriptor += '  '
+
+            text_length = len(self.descriptor) * 6
+            text_surf = self.gm.font.render(self.descriptor, False, (0, 0, 0))
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - text_length / 2 + 1, 30 + 1))
+            text_surf = self.gm.font.render(self.descriptor, False, self.air_colors[int(self.air_color_selector)])
+            surface.blit(text_surf, (self.settings.internal_res_x / 2 - text_length / 2, 30))
+
+            self.air_color_selector += 0.5
+            self.air_color_selector %= len(self.air_colors)
+
+        # Draw speed
+        text = str(int((abs(self.car.x_velocity) + abs(self.car.y_velocity)) * 12)) + ' mph'
+        text_length = len(text) * 12
+        text_surf = self.gm.big_font.render(text, False, (0, 0, 0))
+        surface.blit(text_surf, (self.settings.internal_res_x - text_length + 1, self.settings.internal_res_y - 20 + 1))
+        text_surf = self.gm.big_font.render(text, False, (255, 255, 255))
+        surface.blit(text_surf, (self.settings.internal_res_x - text_length, self.settings.internal_res_y - 20))
 
 
 class LineStruct(ctypes.Structure):

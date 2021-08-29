@@ -57,6 +57,8 @@ class MainMenuScreen(Screen):
         self.buttons = list()
 
     def update(self, events):
+        self.gm.reset_game()
+
         # Check keys
         for event in events:
             if event.type == pygame.QUIT:
