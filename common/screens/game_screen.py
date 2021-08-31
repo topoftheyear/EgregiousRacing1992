@@ -101,6 +101,8 @@ class GameScreen(Screen):
         self.car = None
         self.camera = None
 
+        self.num_coins = 0
+
         self.air_color_selector = 0
         self.descriptor = ''
 
