@@ -22,3 +22,4 @@ class Screens:
     leaderboard = 3
     game = 4
     map_select = 5
+    game_end = 6

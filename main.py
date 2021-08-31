@@ -9,6 +9,7 @@ import pygame.gfxdraw
 from common.enums import Screens
 from common.game_manager import GameManager
 from common.screens.game_screen import GameScreen
+from common.screens.game_end_screen import GameEndScreen
 from common.screens.leaderboard_screen import LeaderboardScreen
 from common.screens.main_menu_screen import MainMenuScreen
 from common.screens.map_select_screen import MapSelectScreen
@@ -42,6 +43,8 @@ def main():
     mss_thread = Thread(mss.load, ())
     gs = GameScreen()
     gs_thread = Thread(gs.load, ())
+    ges = GameEndScreen()
+    ges_thread = Thread(ges.load, ())
     states = {
         Screens.main_menu: {
             'screen': mms,
@@ -62,6 +65,10 @@ def main():
         Screens.game: {
             'screen': gs,
             'thread': gs_thread,
+        },
+        Screens.game_end: {
+            'screen': ges,
+            'thread': ges_thread,
         }
     }
 

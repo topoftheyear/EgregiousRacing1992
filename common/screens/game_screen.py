@@ -119,7 +119,6 @@ class GameScreen(Screen):
             if self.num_coins < self.max_coins:
                 for _ in range(self.max_coins - self.num_coins):
                     self.num_coins += 1
-                    print(f'spawning coin {self.num_coins}')
                     temp = Coin(Point(random.randint(0, 1023), random.randint(0, 1023)), height=500)
                     self.object_list[temp.id] = temp
 

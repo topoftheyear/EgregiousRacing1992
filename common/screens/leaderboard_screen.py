@@ -143,13 +143,13 @@ class LeaderboardScreen(Screen):
         )
 
         # Draw the leaderboard text
-        text_surf = self.gm.font.render('Leaderboard', False, (255, 255, 255))
-        surface.blit(text_surf, (self.settings.internal_res_x / 2 - 33, 20))
+        text_surf = self.gm.big_font.render('Leaderboard', False, (255, 255, 255))
+        surface.blit(text_surf, (self.settings.internal_res_x / 2 - 66, 15))
 
         map_name = list(self.map_images.keys())[self.current_map]
-        text_surf = self.gm.font.render(map_name, False, (255, 255, 255))
-        text_length = len(map_name) * 6
-        surface.blit(text_surf, (self.settings.internal_res_x / 2 - text_length / 2, 40))
+        text_surf = self.gm.big_font.render(map_name, False, (255, 255, 255))
+        text_length = len(map_name) * 12
+        surface.blit(text_surf, (self.settings.internal_res_x / 2 - text_length / 2, 35))
 
         # Obtain leaderboard
         entries = self.leaderboard.leaderboard[map_name]

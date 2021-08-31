@@ -42,7 +42,7 @@ class GameManager(metaclass=Singleton):
             self.game_end_timer += self.settings.delta_time
 
             if self.game_end_timer >= self.game_end_max:
-                self.change_screens(Screens.main_menu)
+                self.change_screens(Screens.game_end)
 
     def change_screens(self, new_screen):
         self.previous_screen = self.current_screen

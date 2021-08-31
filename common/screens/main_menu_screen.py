@@ -90,6 +90,10 @@ class MainMenuScreen(Screen):
     def render(self, surface):
         surface.fill((0, 0, 0))
 
+        # Render title text
+        text_surf = self.gm.big_font.render('Egregious Racing 1992', False, (229, 59, 68))
+        surface.blit(text_surf, (self.settings.internal_res_x / 2 - 116, 40))
+
         # Render buttons
         for button in self.buttons:
             button.render(surface)
