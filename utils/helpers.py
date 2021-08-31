@@ -116,7 +116,7 @@ def get_list_of_maps(as_files=True):
         if file.endswith('.png') and file.startswith('C') and not file.endswith('H.png'):
             map_name = file
             if not as_files:
-                stripped = file.strip('.png')
+                stripped = file.replace('.png', '')
                 map_name = stripped[1:]
             maps.append(map_name)
 
