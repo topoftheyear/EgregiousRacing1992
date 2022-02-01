@@ -10,6 +10,7 @@ python -O -m PyInstaller -w --noconfirm --name "Egregious Racing 1992"^
     --add-data="./leaderboard.json;."^
     --add-data="./visitor2.ttf;."^
     --add-data="./README.md;."^
+    --add-data="./version.py;."^
     --clean main.py^
     main.py
 pause

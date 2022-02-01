@@ -8,6 +8,7 @@ from common.enums import Screens
 from common.game_manager import GameManager
 from common.settings import Settings
 from common.screens.screen import Screen
+from version import version
 
 
 class MainMenuScreen(Screen):
@@ -100,6 +101,11 @@ class MainMenuScreen(Screen):
 
             if button == self.buttons[self.selected]:
                 pygame.gfxdraw.rectangle(surface, button.rect, (229, 59, 68))
+                
+        # Render version number
+        text_surf = self.gm.font.render(version, False, (255, 255, 255))
+        text_width = len(version) * 6
+        surface.blit(text_surf, (self.settings.internal_res_x - text_width, self.settings.internal_res_y - 10))
 
     def handle_selection(self):
         if self.selected == 0:

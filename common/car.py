@@ -127,7 +127,7 @@ class Car(GameObject):
                 working_angle = min(angle, math.pi - angle)
                 ratio = working_angle / (math.pi / 2)
 
-                move_reduction = ratio * 2 + 0.5
+                move_reduction = ratio * 5 + 0.5
 
             # Add braking if on the ground
             if self.braking:

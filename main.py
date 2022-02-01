@@ -119,6 +119,8 @@ def main():
 
         pygame.display.update()
 
+        # Eat inputs
+        pygame.mouse.get_rel()
         # Update clock and delta time
         clock.tick(settings.fps_cap)
         settings.delta_time = clock.get_time() / 1000
