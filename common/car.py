@@ -17,6 +17,7 @@ class Car(GameObject):
         self.gm = GameManager()
 
         self.rotation = rotation
+        self.air_rotation_speed_multiplier = 1.5
         self.acceleration_speed = 3
         self.settings = Settings()
 
@@ -34,6 +35,7 @@ class Car(GameObject):
         self.braking = False
 
         self.air_time = 0
+        self.in_air_rotation = 0
 
     def handle_input(self, events):
         # Check keys
@@ -68,12 +70,14 @@ class Car(GameObject):
             self.gm.timer_started = True
 
             if self.air_time >= 1:
-                self.gm.score += int(self.air_time * 10)
+                rotation_mult = 1 + (0.1 * int(abs(math.degrees(self.in_air_rotation)) / 90))
+                self.gm.score += int(self.air_time * 15 * rotation_mult)
 
             self.air_time = 0
+            self.in_air_rotation = 0
         else:
             if self.gm.timer_started:
-                self.air_time += self.settings.delta_time * 1.5
+                self.air_time += self.settings.delta_time
 
         # Create total move vector strength
         move_strength = 0
@@ -93,10 +97,16 @@ class Car(GameObject):
                 move_strength += (self.acceleration_speed / 4)
         if self.rotating_left:
             amt = math.pi / 2 * self.settings.delta_time
+            if self.air_time > 0:
+                amt *= self.air_rotation_speed_multiplier
+                self.in_air_rotation += amt
             self.rotation += amt
             camera.rotation += amt
         if self.rotating_right:
             amt = -math.pi / 2 * self.settings.delta_time
+            if self.air_time > 0:
+                amt *= self.air_rotation_speed_multiplier
+                self.in_air_rotation += amt
             self.rotation += amt
             camera.rotation += amt
 

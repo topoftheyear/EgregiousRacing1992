@@ -66,6 +66,8 @@ class Settings(metaclass=Singleton):
         self.handbrake = 32
         self.reset_camera = 99
 
+        self.recalculate()
+
     def save(self):
         # Video
         video = self.config['Video']
@@ -87,6 +89,8 @@ class Settings(metaclass=Singleton):
         controls['RotateRight'] = str(self.rotate_right)
         controls['Handbrake'] = str(self.handbrake)
         controls['ResetCamera'] = str(self.reset_camera)
+
+        self.recalculate()
 
         with open('settings.ini', 'w') as configfile:
             self.config.write(configfile)

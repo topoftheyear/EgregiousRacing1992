@@ -1,4 +1,5 @@
 import math
+import os
 import random
 import sys
 import time
@@ -20,6 +21,8 @@ from utils.thread import Thread
 
 
 def main():
+    os.add_dll_directory('/')
+
     pygame.init()
     gm = GameManager()
     settings = Settings()
@@ -88,6 +91,10 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     pygame.display.quit()
                     sys.exit()
+            if event.type == pygame.WINDOWRESIZED:
+                screen = pygame.display.set_mode((settings.res_x, settings.res_y), flags)
+                surface = pygame.Surface((settings.internal_res_x, settings.internal_res_y))
+                scaled_surface = pygame.Surface(screen.get_size())
 
         cscreen = gm.screens[gm.current_screen]['screen']
         thread = gm.screens[gm.current_screen]['thread']

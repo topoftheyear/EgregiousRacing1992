@@ -44,8 +44,8 @@ class SettingsScreen(Screen):
         self.buttons = dict()
 
         self.info_text = {
-            'res_left': 'Requires restart',
-            'res_right': 'Requires restart',
+            'res_left': 'Changes window resolution',
+            'res_right': 'Changes window resolution',
             'mouse_left': 'Changes mouse sensitivity',
             'mouse_right': 'Changes mouse sensitivity',
             'accelerate': 'Select to rebind',
@@ -401,6 +401,8 @@ class SettingsScreen(Screen):
 
         self.res_selector %= len(self.res_list)
         self.settings.res_x, self.settings.res_y = self.res_list[self.res_selector].split('x')
+        self.settings.res_x = int(self.settings.res_x)
+        self.settings.res_y = int(self.settings.res_y)
         self.settings.mouse_sensitivity = max(0.0, min(self.settings.mouse_sensitivity, 1.0))
         self.settings.mouse_sensitivity = int(round(self.settings.mouse_sensitivity * 100)) / 100
 
@@ -408,7 +410,8 @@ class SettingsScreen(Screen):
             self.gm.change_screens(Screens.main_menu)
         elif selected == 'save':
             self.settings.save()
+            pygame.event.post(pygame.event.Event(pygame.WINDOWRESIZED))
         elif selected == 'default':
             self.settings.default()
             self.res_selector = 0
-
+            pygame.event.post(pygame.event.Event(pygame.WINDOWRESIZED))

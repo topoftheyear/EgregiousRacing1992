@@ -1,4 +1,5 @@
 import ctypes
+import math
 import random
 
 import cv2
@@ -21,7 +22,7 @@ class GameScreen(Screen):
         self.mouse_visible = False
         self.mouse_grab = True
 
-        self.line_calculator = ctypes.CDLL('liblines.dll')
+        self.line_calculator = ctypes.CDLL('dll/liblines.dll')
         self.line_calculator.get_lines.argtypes = [ctypes.POINTER(LineStruct)]
         self.line_calculator.get_lines.restype = None
 
@@ -269,19 +270,26 @@ class GameScreen(Screen):
         text = str(self.gm.score)
         text_length = len(text) * 12
         text_surf = self.gm.big_font.render(text, False, (0, 0, 0))
-        surface.blit(text_surf, (self.settings.internal_res_x - text_length - 10 + 1, 10 + 1))
+        surface.blit(text_surf, (self.settings.internal_res_x - text_surf.get_width() - 10 + 1, 10 + 1))
         text_surf = self.gm.big_font.render(text, False, (255, 255, 255))
-        surface.blit(text_surf, (self.settings.internal_res_x - text_length - 10, 10))
+        surface.blit(text_surf, (self.settings.internal_res_x - text_surf.get_width() - 10, 10))
 
         # Draw airtime
-        air_score = int(self.car.air_time * 10)
+        air_score = int(self.car.air_time * 15)
         if air_score >= 10:
             text = '+' + str(air_score)
-            text_length = len(text) * 6
+
             text_surf = self.gm.font.render(text, False, (0, 0, 0))
-            surface.blit(text_surf, (self.settings.internal_res_x - text_length - 10 + 1, 30 + 1))
+            surface.blit(text_surf, (self.settings.internal_res_x - text_surf.get_width() - 10 + 1, 30 + 1))
             text_surf = self.gm.font.render(text, False, (255, 255, 255))
-            surface.blit(text_surf, (self.settings.internal_res_x - text_length - 10, 30))
+            surface.blit(text_surf, (self.settings.internal_res_x - text_surf.get_width() - 10, 30))
+
+            if abs(self.car.in_air_rotation) >= math.pi / 2:
+                text = 'x' + str(1 + (0.1 * int(abs(math.degrees(self.car.in_air_rotation)) / 90)))
+                text_surf = self.gm.font.render(text, False, (0, 0, 0))
+                surface.blit(text_surf, (self.settings.internal_res_x - text_surf.get_width() - 10 + 1, 38 + 1))
+                text_surf = self.gm.font.render(text, False, (229, 59, 68))
+                surface.blit(text_surf, (self.settings.internal_res_x - text_surf.get_width() - 10, 38))
 
             if air_score > 1000:
                 self.descriptor = 'How'
@@ -302,6 +310,9 @@ class GameScreen(Screen):
 
             self.air_timer = 1
 
+            if abs(self.car.in_air_rotation) >= math.pi / 2:
+                self.descriptor += ' + ' + str(int(abs(math.degrees(self.car.in_air_rotation)) / 90 * 90)) + '°'
+
         if self.air_timer > 0:
             if self.air_timer != 1:
                 self.descriptor += '  '
@@ -317,11 +328,10 @@ class GameScreen(Screen):
 
         # Draw speed
         text = str(int((abs(self.car.x_velocity) + abs(self.car.y_velocity)) * 12)) + ' mph'
-        text_length = len(text) * 12
         text_surf = self.gm.big_font.render(text, False, (0, 0, 0))
-        surface.blit(text_surf, (self.settings.internal_res_x - text_length + 1, self.settings.internal_res_y - 20 + 1))
+        surface.blit(text_surf, (self.settings.internal_res_x - text_surf.get_width() + 1, self.settings.internal_res_y - 20 + 1))
         text_surf = self.gm.big_font.render(text, False, (255, 255, 255))
-        surface.blit(text_surf, (self.settings.internal_res_x - text_length, self.settings.internal_res_y - 20))
+        surface.blit(text_surf, (self.settings.internal_res_x - text_surf.get_width(), self.settings.internal_res_y - 20))
 
 
 class LineStruct(ctypes.Structure):
