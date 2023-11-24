@@ -35,6 +35,7 @@ class SettingsScreen(Screen):
             '1280x720',
             '1600x900',
             '1920x1080',
+            '2560x1440'
         ]
         self.res_selector = self.res_list.index(f'{self.settings.res_x}x{self.settings.res_y}')
 

@@ -7,15 +7,15 @@ from common.settings import Settings
 
 
 class Camera:
-    def __init__(self, player, rotation=0, distance_from_player=15, horizon=540, scale_height=240):
+    def __init__(self, player, rotation=0, distance_from_player=15, horizon=120, scale_height=60):
         self.player = player
         self.position = Point()
         self.rotation = rotation
         self.v_rotation = 5.705
         self.distance = distance_from_player
-        self.height = 0
         self.base_horizon = horizon
         self.horizon = horizon
+        self.height = 0
         self.scale_height = scale_height
         self.settings = Settings()
 

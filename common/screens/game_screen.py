@@ -156,8 +156,8 @@ class GameScreen(Screen):
             self.ls.currentY = self.camera.position.y
             self.ls.rotation = self.camera.rotation
             self.ls.height = self.camera.height
-            self.ls.horizon = self.camera.horizon / self.settings.res_width_ratio
-            self.ls.scaleHeight = self.camera.scale_height / self.settings.res_height_ratio
+            self.ls.horizon = self.camera.horizon
+            self.ls.scaleHeight = self.camera.scale_height
             self.ls.distance = self.settings.view_distance
             self.ls.numObjects = len(self.object_list.keys())
             x = 0
